@@ -13,8 +13,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    kkrboard.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    kkrboard.h
 
 CONFIG += c++11
