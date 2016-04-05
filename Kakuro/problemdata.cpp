@@ -52,7 +52,8 @@ ProblemData *ProblemData::problemLoader(const QString &filename)
     pNewData->m_rows = 3;
 
     auto &data = pNewData->m_data;
-    data.reserve(pNewData->m_cols * pNewData->m_rows);
+    //data.reserve(pNewData->m_cols * pNewData->m_rows);
+    data.resize(pNewData->m_cols * pNewData->m_rows);
 
     auto i = pNewData->cr2i(0,0);
     data[i].type = CellType::CellClue;
