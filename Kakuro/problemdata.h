@@ -11,6 +11,8 @@ enum class CellType {
     CellClue
 };
 
+const static int CLOSED_CLUE = 0;
+
 class ProblemData
 {
     struct Cell {

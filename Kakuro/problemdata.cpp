@@ -1,5 +1,8 @@
 #include <memory>
+#include <cstring>
+#include <cctype>
 #include "problemdata.h"
+#include <QFile>
 #include <QtGlobal>
 
 namespace problemdata {
@@ -43,8 +46,48 @@ int ProblemData::getAnswer(int col, int row) const
     return m_data[i].ans;
 }
 
+static const int INVALID_DATA = -1;
+static int parseHeader(QFile &f_data)
+// parse the header of kakuro data and returns the version (>=0)
+// if the file is invalid, return -1 (INVALID_DATA)
+{
+    static char HEADER[] = {'K', 'K', 'R', 'P'};
+    const static unsigned VERSION_SIZE = 4;
+
+    char buffer[4];
+    qint64 byteRead;
+
+    // header check
+    byteRead = f_data.read(buffer, sizeof(HEADER));
+    if(byteRead != sizeof(HEADER))
+        return INVALID_DATA;
+    if(std::memcmp(HEADER, buffer, sizeof(HEADER)) != 0)
+        return INVALID_DATA;
+
+    // version check
+    byteRead = f_data.read(buffer, VERSION_SIZE);
+    if(byteRead != VERSION_SIZE)
+        return INVALID_DATA;
+    int version = 0;
+    for(auto i = 0u; i < VERSION_SIZE; ++i) {
+        if(!std::isdigit(buffer[i]))
+            return INVALID_DATA;
+        version *= 10;
+        version += buffer[i] - '0';
+    }
+
+    return version;
+}
+
 ProblemData *ProblemData::problemLoader(const QString &filename)
 {
+    QFile f_data{filename};
+    if(!f_data.open(QIODevice::ReadOnly))
+        return nullptr;
+
+    if(parseHeader(f_data) != 0)
+        return nullptr;
+
     std::unique_ptr<ProblemData> pNewData{new ProblemData};
     // TODO: need to replace with actual code
     // set up dummy data
@@ -57,7 +100,7 @@ ProblemData *ProblemData::problemLoader(const QString &filename)
 
     auto i = pNewData->cr2i(0,0);
     data[i].type = CellType::CellClue;
-    data[i].right = data[i].down = 0;
+    data[i].right = data[i].down = CLOSED_CLUE;
 
     i = pNewData->cr2i(1,0);
     data[i].type = CellType::CellClue;
