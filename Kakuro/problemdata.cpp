@@ -46,7 +46,24 @@ int ProblemData::getAnswer(int col, int row) const
     return m_data[i].ans;
 }
 
+/*
+ * functions for data loader
+ */
+
 static const int INVALID_DATA = -1;
+
+static int chars2int(const char *buffer, int len)
+{
+    int val = 0;
+    for(int i = 0; i < len; ++i) {
+        if(!std::isdigit(buffer[i]))
+            return INVALID_DATA;
+        val *= 10;
+        val += buffer[i] - '0';
+    }
+    return val;
+}
+
 static int parseHeader(QFile &f_data)
 // parse the header of kakuro data and returns the version (>=0)
 // if the file is invalid, return -1 (INVALID_DATA)
@@ -68,16 +85,16 @@ static int parseHeader(QFile &f_data)
     byteRead = f_data.read(buffer, VERSION_SIZE);
     if(byteRead != VERSION_SIZE)
         return INVALID_DATA;
-    int version = 0;
-    for(auto i = 0u; i < VERSION_SIZE; ++i) {
-        if(!std::isdigit(buffer[i]))
-            return INVALID_DATA;
-        version *= 10;
-        version += buffer[i] - '0';
-    }
 
-    return version;
+    return chars2int(buffer, VERSION_SIZE);
 }
+
+static const int SIZE_LEN = 4;
+static const int VER0_TYPE_LEN = 1;
+static const char VER0_CELL_ANSWER = '0';
+static const char VER0_CELL_CLUE = '1';
+static const int VER0_ANS_LEN = 1;
+static const int VER0_CLUE_LEN = 2;
 
 ProblemData *ProblemData::problemLoader(const QString &filename)
 {
@@ -89,54 +106,67 @@ ProblemData *ProblemData::problemLoader(const QString &filename)
         return nullptr;
 
     std::unique_ptr<ProblemData> pNewData{new ProblemData};
-    // TODO: need to replace with actual code
-    // set up dummy data
-    pNewData->m_cols = 3;
-    pNewData->m_rows = 3;
+    char buffer[4];
+    int byteRead;
+
+    byteRead = f_data.read(buffer, SIZE_LEN);
+    if(byteRead != SIZE_LEN)
+        return nullptr;
+    pNewData->m_cols = chars2int(buffer, SIZE_LEN);
+    if(pNewData->m_cols == INVALID_DATA)
+        return nullptr;
+
+    byteRead = f_data.read(buffer, SIZE_LEN);
+    if(byteRead != SIZE_LEN)
+        return nullptr;
+    pNewData->m_rows = chars2int(buffer, SIZE_LEN);
+    if(pNewData->m_rows == INVALID_DATA)
+        return nullptr;
 
     auto &data = pNewData->m_data;
-    //data.reserve(pNewData->m_cols * pNewData->m_rows);
     data.resize(pNewData->m_cols * pNewData->m_rows);
+    for(int r = 0; r < pNewData->m_rows; ++r) {
+        for(int c = 0; c < pNewData->m_cols; ++c) {
+            const auto i = pNewData->cr2i(c,r);
 
-    auto i = pNewData->cr2i(0,0);
-    data[i].type = CellType::CellClue;
-    data[i].right = data[i].down = CLOSED_CLUE;
+            // cell type
+            byteRead = f_data.read(buffer, VER0_TYPE_LEN);
+            if(byteRead != VER0_TYPE_LEN)
+                return nullptr;
+            switch(buffer[0]) {
+            case VER0_CELL_ANSWER:
+                data[i].type = CellType::CellAnswer;
+                byteRead = f_data.read(buffer, VER0_ANS_LEN);
+                if(byteRead != VER0_ANS_LEN)
+                    return nullptr;
+                data[i].ans = chars2int(buffer, VER0_ANS_LEN);
+                if(data[i].ans < 1 || 9 < data[i].ans)
+                    return nullptr;
+                break;
+            case VER0_CELL_CLUE:
+                data[i].type = CellType::CellClue;
 
-    i = pNewData->cr2i(1,0);
-    data[i].type = CellType::CellClue;
-    data[i].right = 0;
-    data[i].down = 4;
+                // right
+                byteRead = f_data.read(buffer, VER0_CLUE_LEN);
+                if(byteRead != VER0_CLUE_LEN)
+                    return nullptr;
+                data[i].right = chars2int(buffer, VER0_CLUE_LEN);
+                if(data[i].right < 0 || 45 < data[i].right)
+                    return nullptr;
 
-    i = pNewData->cr2i(2,0);
-    data[i].type = CellType::CellClue;
-    data[i].right = 0;
-    data[i].down = 7;
-
-    i = pNewData->cr2i(0,1);
-    data[i].type = CellType::CellClue;
-    data[i].right = 3;
-    data[i].down = 0;
-
-    i = pNewData->cr2i(1,1);
-    data[i].type = CellType::CellAnswer;
-    data[i].ans = 1;
-
-    i = pNewData->cr2i(2,1);
-    data[i].type = CellType::CellAnswer;
-    data[i].ans = 2;
-
-    i = pNewData->cr2i(0,2);
-    data[i].type = CellType::CellClue;
-    data[i].right = 8;
-    data[i].down = 0;
-
-    i = pNewData->cr2i(1,2);
-    data[i].type = CellType::CellAnswer;
-    data[i].ans = 3;
-
-    i = pNewData->cr2i(1,2);
-    data[i].type = CellType::CellAnswer;
-    data[i].ans = 5;
+                // down
+                byteRead = f_data.read(buffer, VER0_CLUE_LEN);
+                if(byteRead != VER0_CLUE_LEN)
+                    return nullptr;
+                data[i].down = chars2int(buffer, VER0_CLUE_LEN);
+                if(data[i].down < 0 || 45 < data[i].down)
+                    return nullptr;
+                break;
+            default:
+                return nullptr;
+            }
+        }
+    }
 
     return pNewData.release();
 }
