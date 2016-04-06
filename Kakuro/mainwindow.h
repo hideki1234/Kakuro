@@ -48,6 +48,9 @@ class MainWindow : public QMainWindow
     void setupMainMenu();
     void setupDocks();
 
+private slots:
+    void open();
+
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();

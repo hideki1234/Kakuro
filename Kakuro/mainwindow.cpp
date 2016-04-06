@@ -5,6 +5,9 @@
 #include <QScrollArea>
 #include <QMenuBar>
 #include <QDockWidget>
+#include <QFileDialog>
+#include <QMessageBox>
+#include "problemdata.h"
 
 void MainWindow::makeCoreWidgets()
 {
@@ -63,6 +66,8 @@ void MainWindow::setupMainMenu()
 
     // File menu
     QMenu * pMenuFile = new QMenu{tr("&File")};
+    pMenuFile->addAction(tr("&Open"), this, &MainWindow::open);
+    pMenuFile->addSeparator();
     pMenuFile->addAction(tr("E&xit"), this, &QWidget::close);
     pMainMenu->addMenu(pMenuFile);
 
@@ -104,5 +109,27 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+
+}
+
+namespace pd = problemdata;
+
+void MainWindow::open()
+{
+    QString filename = QFileDialog::getOpenFileName(this,
+                                                    tr("Open Kakuro Data"),
+                                                    QString(),
+                                                    "Kakuro (*.kkr)",
+                                                    nullptr,
+                                                    QFileDialog::ReadOnly);
+    if(filename == QStringLiteral(""))
+        return;
+
+    pd::ProblemData * pData = pd::ProblemData::problemLoader(filename);
+    if(pData == nullptr) {
+        QMessageBox::critical(this, tr("Kakuro Player"), tr("Failed to open ") + filename);
+        return;
+    }
+
 
 }
