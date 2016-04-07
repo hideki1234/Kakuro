@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include "problemdata.h"
+#include <QDebug>
 
 void MainWindow::makeCoreWidgets()
 {
@@ -46,6 +47,10 @@ void MainWindow::setupCentralPane()
 
     // main board
     QScrollArea *pScrollBoard = new QScrollArea;
+    QPalette palBack(palette());
+    palBack.setColor(QPalette::Background, Qt::white);
+    pScrollBoard->setPalette(palBack);
+    pScrollBoard->setAutoFillBackground(true);
     pScrollBoard->setMinimumWidth(BOARD_WIDTH);
     pScrollBoard->setMinimumHeight(BOARD_HEIGHT);
     pScrollBoard->setWidget(m_pKkrBoard);
@@ -103,6 +108,8 @@ MainWindow::MainWindow(QWidget *parent)
     setupMainMenu();
     setupDocks();
 
+    connect(this, &MainWindow::newData, m_pKkrBoard, &KkrBoard::updateData);
+
     setMinimumWidth(MAIN_WIDTH);
     setMinimumHeight(MAIN_HEIGHT);
 }
@@ -125,11 +132,11 @@ void MainWindow::open()
     if(filename == QStringLiteral(""))
         return;
 
-    pd::ProblemData * pData = pd::ProblemData::problemLoader(filename);
+    std::shared_ptr<pd::ProblemData> pData{pd::ProblemData::problemLoader(filename)};
     if(pData == nullptr) {
         QMessageBox::critical(this, tr("Kakuro Player"), tr("Failed to open ") + filename);
         return;
     }
 
-
+    emit newData(pData);
 }
