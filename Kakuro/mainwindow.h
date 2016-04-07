@@ -6,7 +6,11 @@
 #include <QProgressBar>
 #include <QLabel>
 #include <QMenu>
+#include <memory>
 #include "kkrboard.h"
+#include "problemdata.h"
+
+namespace pd = problemdata;
 
 class MainWindow : public QMainWindow
 {
@@ -48,9 +52,15 @@ class MainWindow : public QMainWindow
     void setupMainMenu();
     void setupDocks();
 
+private slots:
+    void open();
+
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+signals:
+    void newData(std::shared_ptr<pd::ProblemData> pData);
 };
 
 #endif // MAINWINDOW_H

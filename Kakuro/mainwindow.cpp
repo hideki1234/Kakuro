@@ -5,6 +5,10 @@
 #include <QScrollArea>
 #include <QMenuBar>
 #include <QDockWidget>
+#include <QFileDialog>
+#include <QMessageBox>
+#include "problemdata.h"
+#include <QDebug>
 
 void MainWindow::makeCoreWidgets()
 {
@@ -43,6 +47,10 @@ void MainWindow::setupCentralPane()
 
     // main board
     QScrollArea *pScrollBoard = new QScrollArea;
+    QPalette palBack(palette());
+    palBack.setColor(QPalette::Background, Qt::white);
+    pScrollBoard->setPalette(palBack);
+    pScrollBoard->setAutoFillBackground(true);
     pScrollBoard->setMinimumWidth(BOARD_WIDTH);
     pScrollBoard->setMinimumHeight(BOARD_HEIGHT);
     pScrollBoard->setWidget(m_pKkrBoard);
@@ -63,6 +71,8 @@ void MainWindow::setupMainMenu()
 
     // File menu
     QMenu * pMenuFile = new QMenu{tr("&File")};
+    pMenuFile->addAction(tr("&Open"), this, &MainWindow::open);
+    pMenuFile->addSeparator();
     pMenuFile->addAction(tr("E&xit"), this, &QWidget::close);
     pMainMenu->addMenu(pMenuFile);
 
@@ -98,6 +108,8 @@ MainWindow::MainWindow(QWidget *parent)
     setupMainMenu();
     setupDocks();
 
+    connect(this, &MainWindow::newData, m_pKkrBoard, &KkrBoard::updateData);
+
     setMinimumWidth(MAIN_WIDTH);
     setMinimumHeight(MAIN_HEIGHT);
 }
@@ -105,4 +117,26 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
 
+}
+
+namespace pd = problemdata;
+
+void MainWindow::open()
+{
+    QString filename = QFileDialog::getOpenFileName(this,
+                                                    tr("Open Kakuro Data"),
+                                                    QString(),
+                                                    "Kakuro (*.kkr)",
+                                                    nullptr,
+                                                    QFileDialog::ReadOnly);
+    if(filename == QStringLiteral(""))
+        return;
+
+    std::shared_ptr<pd::ProblemData> pData{pd::ProblemData::problemLoader(filename)};
+    if(pData == nullptr) {
+        QMessageBox::critical(this, tr("Kakuro Player"), tr("Failed to open ") + filename);
+        return;
+    }
+
+    emit newData(pData);
 }
