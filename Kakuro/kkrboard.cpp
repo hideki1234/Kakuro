@@ -26,8 +26,7 @@ void KkrBoard::updateData(std::shared_ptr<problemdata::ProblemData> pNewData)
     m_board_width = 2*MARGIN + m_frame_width;
     m_board_height = 2*MARGIN + m_frame_height;
 
-    setMinimumWidth(m_board_width);
-    setMinimumHeight(m_board_height);
+    setFixedSize(m_board_width, m_board_height);
 
     update();
 }
