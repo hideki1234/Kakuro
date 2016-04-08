@@ -1,49 +1,78 @@
-#include <memory>
+#include "problemdata.h"
+#include <vector>
 #include <cstring>
 #include <cctype>
-#include "problemdata.h"
 #include <QFile>
 #include <QtGlobal>
 
 namespace problemdata {
 
-ProblemData::ProblemData()
-{
+struct Cell {
+    CellType type;
+    union {
+        char ans;
+        struct {
+            char right;
+            char down;
+        };
+    };
+};
 
+class ProblemData_int {
+public:
+    int cols;
+    int rows;
+    std::vector<Cell> data;
+
+    int cr2i(int c, int r) const {return r * cols + c;}
+        // calculate index of m_data from col and row
+};
+
+ProblemData::ProblemData(std::unique_ptr<ProblemData_int> m) : m_(std::move(m))
+{
 }
 
 ProblemData::~ProblemData()
 {
+}
 
+int ProblemData::getNumCols() const
+{
+    return m_->cols;
+}
+
+int ProblemData::getNumRows() const
+{
+    return m_->rows;
 }
 
 CellType ProblemData::getCellType(int col, int row) const
 {
-    return m_data[cr2i(col,row)].type;
+    return m_->data[m_->cr2i(col,row)].type;
 }
 
 int ProblemData::getClueRight(int col, int row) const
 {
-    const auto i = cr2i(col, row);
-    Q_ASSERT(m_data[i].type == CellType::CellClue);
+    const auto i = m_->cr2i(col, row);
+    Q_ASSERT(m_->data[i].type == CellType::CellClue);
 
-    return m_data[i].right;
+    return m_->data[i].right;
 }
 
 int ProblemData::getClueDown(int col, int row) const
 {
-    const auto i = cr2i(col, row);
-    Q_ASSERT(m_data[i].type == CellType::CellClue);
+    const auto i = m_->cr2i(col, row);
+    Q_ASSERT(m_->data[i].type == CellType::CellClue);
 
-    return m_data[i].down;
+    return m_->data[i].down;
 }
 
 int ProblemData::getAnswer(int col, int row) const
 {
-    const auto i = cr2i(col, row);
-    Q_ASSERT(m_data[i].type == CellType::CellAnswer);
+    const auto i = m_->cr2i(col, row);
+    Q_ASSERT(m_->data[i].type == CellType::CellAnswer);
 
-    return m_data[i].ans;
+    return m_->data[i].ans;
 }
 
 /*
@@ -105,28 +134,28 @@ ProblemData *ProblemData::problemLoader(const QString &filename)
     if(parseHeader(f_data) != 0)
         return nullptr;
 
-    std::unique_ptr<ProblemData> pNewData{new ProblemData};
+    std::unique_ptr<ProblemData_int> pNewData{new ProblemData_int};
     char buffer[4];
     int byteRead;
 
     byteRead = f_data.read(buffer, SIZE_LEN);
     if(byteRead != SIZE_LEN)
         return nullptr;
-    pNewData->m_cols = chars2int(buffer, SIZE_LEN);
-    if(pNewData->m_cols == INVALID_DATA)
+    pNewData->cols = chars2int(buffer, SIZE_LEN);
+    if(pNewData->cols == INVALID_DATA)
         return nullptr;
 
     byteRead = f_data.read(buffer, SIZE_LEN);
     if(byteRead != SIZE_LEN)
         return nullptr;
-    pNewData->m_rows = chars2int(buffer, SIZE_LEN);
-    if(pNewData->m_rows == INVALID_DATA)
+    pNewData->rows = chars2int(buffer, SIZE_LEN);
+    if(pNewData->rows == INVALID_DATA)
         return nullptr;
 
-    auto &data = pNewData->m_data;
-    data.resize(pNewData->m_cols * pNewData->m_rows);
-    for(int r = 0; r < pNewData->m_rows; ++r) {
-        for(int c = 0; c < pNewData->m_cols; ++c) {
+    auto &data = pNewData->data;
+    data.resize(pNewData->cols * pNewData->rows);
+    for(int r = 0; r < pNewData->rows; ++r) {
+        for(int c = 0; c < pNewData->cols; ++c) {
             const auto i = pNewData->cr2i(c,r);
 
             // cell type
@@ -168,7 +197,7 @@ ProblemData *ProblemData::problemLoader(const QString &filename)
         }
     }
 
-    return pNewData.release();
+    return new ProblemData(std::move(pNewData));
 }
 
 }	// namespace problemdata
