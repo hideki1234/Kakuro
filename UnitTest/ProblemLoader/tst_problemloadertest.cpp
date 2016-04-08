@@ -27,6 +27,11 @@ private Q_SLOTS:
     void testCaseVer0InvalidDown();
     void testCaseVer0InvalidRight();
     void testCaseVer0InvalidType();
+    // version 1
+    void testCaseVer1_2x2();
+    void testCaseVer1InvalidAns();
+    void testCaseVer1InvalidRight();
+    void testCaseVer1InvalidType();
 
     /*
      * normal cases
@@ -140,6 +145,72 @@ void ProblemLoaderTest::testCaseVer0Small()
 
     QCOMPARE(pData->getCellType(2,2), pd::CellType::CellAnswer);
     QCOMPARE(pData->getAnswer(2,2), 5);
+}
+
+void ProblemLoaderTest::testCaseVer1_2x2()
+{
+    const QString dataFileName{m_dataPath + "ver1_2x2.kkr"};
+    std::unique_ptr<pd::ProblemData> pData{pd::ProblemData::problemLoader(dataFileName)};
+
+    QVERIFY2(pData.get() != nullptr, "problemLoader should return something");
+
+    // size
+    QCOMPARE(pData->getNumCols(), 3);
+    QCOMPARE(pData->getNumRows(), 3);
+
+    // cells
+    QCOMPARE(pData->getCellType(0,0), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(0,0), pd::CLOSED_CLUE);
+    QCOMPARE(pData->getClueDown(0,0), pd::CLOSED_CLUE);
+
+    QCOMPARE(pData->getCellType(1,0), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(1,0), pd::CLOSED_CLUE);
+    QCOMPARE(pData->getClueDown(1,0), 3);
+
+    QCOMPARE(pData->getCellType(2,0), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(2,0), pd::CLOSED_CLUE);
+    QCOMPARE(pData->getClueDown(2,0), 12);
+
+    QCOMPARE(pData->getCellType(0,1), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(0,1), 4);
+    QCOMPARE(pData->getClueDown(0,1), pd::CLOSED_CLUE);
+
+    QCOMPARE(pData->getCellType(1,1), pd::CellType::CellAnswer);
+    QCOMPARE(pData->getAnswer(1,1), 1);
+
+    QCOMPARE(pData->getCellType(2,1), pd::CellType::CellAnswer);
+    QCOMPARE(pData->getAnswer(2,1), 3);
+
+    QCOMPARE(pData->getCellType(0,2), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(0,2), 11);
+    QCOMPARE(pData->getClueDown(0,2), pd::CLOSED_CLUE);
+
+    QCOMPARE(pData->getCellType(1,2), pd::CellType::CellAnswer);
+    QCOMPARE(pData->getAnswer(1,2), 2);
+
+    QCOMPARE(pData->getCellType(2,2), pd::CellType::CellAnswer);
+    QCOMPARE(pData->getAnswer(2,2), 9);
+}
+
+void ProblemLoaderTest::testCaseVer1InvalidAns()
+{
+    const QString dataFileName{m_dataPath + "ver1InvalidAns.kkr"};
+    std::unique_ptr<pd::ProblemData> pData{pd::ProblemData::problemLoader(dataFileName)};
+    QVERIFY2(pData.get() == nullptr, "Incorrect answer value");
+}
+
+void ProblemLoaderTest::testCaseVer1InvalidRight()
+{
+    const QString dataFileName{m_dataPath + "ver1InvalidRight.kkr"};
+    std::unique_ptr<pd::ProblemData> pData{pd::ProblemData::problemLoader(dataFileName)};
+    QVERIFY2(pData.get() == nullptr, "Incorrect clue right value");
+}
+
+void ProblemLoaderTest::testCaseVer1InvalidType()
+{
+    const QString dataFileName{m_dataPath + "ver1InvalidType.kkr"};
+    std::unique_ptr<pd::ProblemData> pData{pd::ProblemData::problemLoader(dataFileName)};
+    QVERIFY2(pData.get() == nullptr, "Incorrect cell type");
 }
 
 QTEST_APPLESS_MAIN(ProblemLoaderTest)

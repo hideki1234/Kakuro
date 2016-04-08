@@ -2,7 +2,7 @@
 #define PROBLEMDATA_H
 
 #include <QString>
-#include <vector>
+#include <memory>
 
 namespace problemdata {
 
@@ -13,35 +13,21 @@ enum class CellType {
 
 const static int CLOSED_CLUE = 0;
 
+class ProblemData_int;
+
 class ProblemData
 {
-    struct Cell {
-        CellType type;
-        union {
-            char ans;
-            struct {
-                char right;
-                char down;
-            };
-        };
-    };
-
-    int m_cols;
-    int m_rows;
-    std::vector<Cell> m_data;
+    std::unique_ptr<ProblemData_int> m_;
 
     // ctor - only accessible from factory method
-    ProblemData();
-
-    int cr2i(int c, int r) const {return r * m_cols + c;}
-        // calculate index of m_data from col and row
+    ProblemData(std::unique_ptr<ProblemData_int> m);
 
 public:
     ~ProblemData();
 
-    int getNumCols() const {return m_cols;}
+    int getNumCols() const;
         // returns # of columns; includes leftmost clue only columns
-    int getNumRows() const {return m_rows;}
+    int getNumRows() const;
         // return # of rows; includes topmost clue only rows
     CellType getCellType(int col, int row) const;
         // returns the cell type of specified cell
