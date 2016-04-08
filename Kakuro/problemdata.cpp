@@ -118,37 +118,30 @@ static int parseHeader(QFile &f_data)
     return chars2int(buffer, VERSION_SIZE);
 }
 
-static const int SIZE_LEN = 4;
+static const int VER0_SIZE_LEN = 4;
 static const int VER0_TYPE_LEN = 1;
 static const char VER0_CELL_ANSWER = '0';
 static const char VER0_CELL_CLUE = '1';
 static const int VER0_ANS_LEN = 1;
 static const int VER0_CLUE_LEN = 2;
 
-ProblemData *ProblemData::problemLoader(const QString &filename)
+static std::unique_ptr<ProblemData_int> Version0Loader(QFile &f_data)
 {
-    QFile f_data{filename};
-    if(!f_data.open(QIODevice::ReadOnly))
-        return nullptr;
-
-    if(parseHeader(f_data) != 0)
-        return nullptr;
-
     std::unique_ptr<ProblemData_int> pNewData{new ProblemData_int};
     char buffer[4];
     int byteRead;
 
-    byteRead = f_data.read(buffer, SIZE_LEN);
-    if(byteRead != SIZE_LEN)
+    byteRead = f_data.read(buffer, VER0_SIZE_LEN);
+    if(byteRead != VER0_SIZE_LEN)
         return nullptr;
-    pNewData->cols = chars2int(buffer, SIZE_LEN);
+    pNewData->cols = chars2int(buffer, VER0_SIZE_LEN);
     if(pNewData->cols == INVALID_DATA)
         return nullptr;
 
-    byteRead = f_data.read(buffer, SIZE_LEN);
-    if(byteRead != SIZE_LEN)
+    byteRead = f_data.read(buffer, VER0_SIZE_LEN);
+    if(byteRead != VER0_SIZE_LEN)
         return nullptr;
-    pNewData->rows = chars2int(buffer, SIZE_LEN);
+    pNewData->rows = chars2int(buffer, VER0_SIZE_LEN);
     if(pNewData->rows == INVALID_DATA)
         return nullptr;
 
@@ -197,7 +190,28 @@ ProblemData *ProblemData::problemLoader(const QString &filename)
         }
     }
 
-    return new ProblemData(std::move(pNewData));
+    return pNewData;
+}
+
+ProblemData *ProblemData::problemLoader(const QString &filename)
+{
+    std::unique_ptr<ProblemData_int> pInt;
+
+    QFile f_data{filename};
+    if(!f_data.open(QIODevice::ReadOnly))
+        return nullptr;
+
+    switch(parseHeader(f_data)) {
+    case 0:
+        pInt = Version0Loader(f_data);
+        break;
+    default:
+        return nullptr;
+    }
+
+    if(pInt == nullptr)
+        return nullptr;
+    return new ProblemData(std::move(pInt));
 }
 
 }	// namespace problemdata
