@@ -15,29 +15,33 @@ public:
 
 private Q_SLOTS:
     /*
-     * intentional errors
+     * invalid header
      */
-    // common
     void testCaseInvalidSig();
     void testCaseShortSig();
     void testCaseShortVer();
-    // version 0
+    /*
+     * version 0
+     */
+    // error cases
     void testCaseVer0ShortSize();
     void testCaseVer0InvalidAns();
     void testCaseVer0InvalidDown();
     void testCaseVer0InvalidRight();
     void testCaseVer0InvalidType();
-    // version 1
-    void testCaseVer1_2x2();
+    // normal cases
+    void testCaseVer0Small();
+    void testCaseVer0_9x3();
+    /*
+     * version 1
+     */
+    // error cases
     void testCaseVer1InvalidAns();
     void testCaseVer1InvalidRight();
     void testCaseVer1InvalidType();
-
-    /*
-     * normal cases
-     */
-    // version 0
-    void testCaseVer0Small();
+    // normal cases
+    void testCaseVer1_2x2();
+    void testCaseVer1_9x3();
 };
 
 ProblemLoaderTest::ProblemLoaderTest()
@@ -147,6 +151,44 @@ void ProblemLoaderTest::testCaseVer0Small()
     QCOMPARE(pData->getAnswer(2,2), 5);
 }
 
+void ProblemLoaderTest::testCaseVer0_9x3()
+{
+    const QString dataFileName{m_dataPath + "ver0_9x3.kkr"};
+    std::unique_ptr<pd::ProblemData> pData{pd::ProblemData::problemLoader(dataFileName)};
+
+    QVERIFY2(pData.get() != nullptr, "problemLoader should return something");
+
+    // size
+    QCOMPARE(pData->getNumCols(), 10);
+    QCOMPARE(pData->getNumRows(), 4);
+
+    // cells
+    int x, y;
+    x = 0; y = 0;
+    QCOMPARE(pData->getCellType(x,y), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(x,y), pd::CLOSED_CLUE);
+    QCOMPARE(pData->getClueDown(x,y), pd::CLOSED_CLUE);
+
+    x = 3; y = 1;
+    QCOMPARE(pData->getCellType(x,y), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(x,y), 4);
+    QCOMPARE(pData->getClueDown(x,y), 4);
+
+    x = 8; y = 0;
+    QCOMPARE(pData->getCellType(x,y), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(x,y), pd::CLOSED_CLUE);
+    QCOMPARE(pData->getClueDown(x,y), 21);
+
+    x = 7; y = 3;
+    QCOMPARE(pData->getCellType(x,y), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(x,y), 9);
+    QCOMPARE(pData->getClueDown(x,y), pd::CLOSED_CLUE);
+
+    x = 1; y = 2;
+    QCOMPARE(pData->getCellType(x,y), pd::CellType::CellAnswer);
+    QCOMPARE(pData->getAnswer(x,y), 8);
+}
+
 void ProblemLoaderTest::testCaseVer1_2x2()
 {
     const QString dataFileName{m_dataPath + "ver1_2x2.kkr"};
@@ -190,6 +232,44 @@ void ProblemLoaderTest::testCaseVer1_2x2()
 
     QCOMPARE(pData->getCellType(2,2), pd::CellType::CellAnswer);
     QCOMPARE(pData->getAnswer(2,2), 9);
+}
+
+void ProblemLoaderTest::testCaseVer1_9x3()
+{
+    const QString dataFileName{m_dataPath + "ver1_9x3.kkr"};
+    std::unique_ptr<pd::ProblemData> pData{pd::ProblemData::problemLoader(dataFileName)};
+
+    QVERIFY2(pData.get() != nullptr, "problemLoader should return something");
+
+    // size
+    QCOMPARE(pData->getNumCols(), 10);
+    QCOMPARE(pData->getNumRows(), 4);
+
+    // cells
+    int x, y;
+    x = 0; y = 0;
+    QCOMPARE(pData->getCellType(x,y), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(x,y), pd::CLOSED_CLUE);
+    QCOMPARE(pData->getClueDown(x,y), pd::CLOSED_CLUE);
+
+    x = 6; y = 1;
+    QCOMPARE(pData->getCellType(x,y), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(x,y), 10);
+    QCOMPARE(pData->getClueDown(x,y), 17);
+
+    x = 5; y = 0;
+    QCOMPARE(pData->getCellType(x,y), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(x,y), pd::CLOSED_CLUE);
+    QCOMPARE(pData->getClueDown(x,y), 6);
+
+    x = 4; y = 3;
+    QCOMPARE(pData->getCellType(x,y), pd::CellType::CellClue);
+    QCOMPARE(pData->getClueRight(x,y), 9);
+    QCOMPARE(pData->getClueDown(x,y), pd::CLOSED_CLUE);
+
+    x = 9; y = 2;
+    QCOMPARE(pData->getCellType(x,y), pd::CellType::CellAnswer);
+    QCOMPARE(pData->getAnswer(x,y), 4);
 }
 
 void ProblemLoaderTest::testCaseVer1InvalidAns()
