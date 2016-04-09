@@ -39,6 +39,10 @@ public:
 
     static ProblemData *problemLoader(const QString &filename);
         // factory method; load problem data from a file
+
+    // delete unnecessary default methods to make this immutable
+    ProblemData(const ProblemData&) = delete;
+    ProblemData & operator=(const ProblemData&) = delete;
 };
 
 }	// namespace problemdata
