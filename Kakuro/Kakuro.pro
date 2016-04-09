@@ -15,10 +15,12 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     kkrboard.cpp \
-    problemdata.cpp
+    problemdata.cpp \
+    playstatus.cpp
 
 HEADERS  += mainwindow.h \
     kkrboard.h \
-    problemdata.h
+    problemdata.h \
+    playstatus.h
 
 CONFIG += c++11
