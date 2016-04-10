@@ -66,15 +66,15 @@ void PlayStatusTest::testStatusChanged()
 
     ps::Status s;
     s = qvariant_cast<ps::Status>(spy.at(0).at(0));
-    QCOMPARE(s, ps::READY);
+    QCOMPARE(s, ps::Status::READY);
     s = qvariant_cast<ps::Status>(spy.at(1).at(0));
-    QCOMPARE(s, ps::INPLAY);
+    QCOMPARE(s, ps::Status::INPLAY);
     s = qvariant_cast<ps::Status>(spy.at(2).at(0));
-    QCOMPARE(s, ps::PAUSED);
+    QCOMPARE(s, ps::Status::PAUSED);
     s = qvariant_cast<ps::Status>(spy.at(3).at(0));
-    QCOMPARE(s, ps::INPLAY);
+    QCOMPARE(s, ps::Status::INPLAY);
     s = qvariant_cast<ps::Status>(spy.at(4).at(0));
-    QCOMPARE(s, ps::DONE);
+    QCOMPARE(s, ps::Status::DONE);
 }
 
 void PlayStatusTest::testElapsedTime()

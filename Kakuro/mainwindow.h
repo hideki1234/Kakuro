@@ -6,11 +6,14 @@
 #include <QProgressBar>
 #include <QLabel>
 #include <QMenu>
+#include <QTimer>
 #include <memory>
 #include "kkrboard.h"
 #include "problemdata.h"
+#include "playstatus.h"
 
 namespace pd = problemdata;
+namespace ps = playstatus;
 
 class MainWindow : public QMainWindow
 {
@@ -34,6 +37,13 @@ class MainWindow : public QMainWindow
     // Menus
     QMenu *m_pMenuView;
 
+    QTimer m_secTimer;
+
+    /*
+     * models
+     */
+    ps::PlayStatus m_ps;
+
     /*
      * dimensions
     */
@@ -52,12 +62,20 @@ class MainWindow : public QMainWindow
     void setupMainMenu();
     void setupDocks();
 
-private slots:
-    void open();
+    /*
+     * timer
+     */
+    static const int TIMER_INTERVAL = 500;
+    void setTimeIndicator(bool bNone = false);
 
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+private slots:
+    void open();
+    void updateStatus(playstatus::Status newStatus);
+    void timeout();
 
 signals:
     void newData(std::shared_ptr<pd::ProblemData> pData);

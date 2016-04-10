@@ -9,6 +9,7 @@ KkrBoard::KkrBoard(QWidget *parent)
     : QWidget(parent)
     , m_fontAns("consolas")
     , m_fontClue("consolas")
+    , m_showDigits(true)
 {
     m_fontAns.setPixelSize(CELL_WIDTH);
     m_fontClue.setPixelSize(CLUE_WIDTH);
@@ -16,6 +17,7 @@ KkrBoard::KkrBoard(QWidget *parent)
 
 void KkrBoard::updateData(std::shared_ptr<problemdata::ProblemData> pNewData)
 {
+    m_showDigits = true;
     m_pData = pNewData;
 
     // calculate sizes
@@ -28,6 +30,19 @@ void KkrBoard::updateData(std::shared_ptr<problemdata::ProblemData> pNewData)
 
     setFixedSize(m_board_width, m_board_height);
 
+    update();
+}
+
+void KkrBoard::updateStatus(playstatus::Status newStatus)
+{
+    switch(newStatus) {
+    case playstatus::Status::INPLAY:
+    case playstatus::Status::DONE:
+        m_showDigits = true;
+        break;
+    default:
+        m_showDigits = false;
+    }
     update();
 }
 
@@ -54,7 +69,7 @@ QRect KkrBoard::getClueRectDown(const QRect &cellRect) const
     return QRect(x, y, CLUE_WIDTH, CLUE_WIDTH);
 }
 
-void KkrBoard::drawCell(QPainter &p, int col, int row, bool bDrawValue) const
+void KkrBoard::drawCell(QPainter &p, int col, int row) const
 {
     static const char * digits[] = {
         "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",  "9",
@@ -66,10 +81,11 @@ void KkrBoard::drawCell(QPainter &p, int col, int row, bool bDrawValue) const
     const QRect cellRect{getCellRect(col, row)};
     switch(m_pData->getCellType(col, row)) {
     case pd::CellType::CellAnswer:
-        if(!bDrawValue)
-            break;
-        p.setFont(m_fontAns);
-        p.drawText(cellRect, Qt::AlignCenter | Qt::AlignHCenter, digits[m_pData->getAnswer(col, row)]);
+        /* TODO: show user inputs instead of answers */
+        if(m_showDigits) {
+            p.setFont(m_fontAns);
+            p.drawText(cellRect, Qt::AlignCenter | Qt::AlignHCenter, digits[m_pData->getAnswer(col, row)]);
+        }
         break;
     case pd::CellType::CellClue:
     {
@@ -92,7 +108,7 @@ void KkrBoard::drawCell(QPainter &p, int col, int row, bool bDrawValue) const
         if(m_pData->getClueRight(col, row) != pd::CLOSED_CLUE) {
             const QRect clueRect{getClueRectRight(cellRect)};
             p.fillRect(clueRect, brWhite);
-            if(bDrawValue) {
+            if(m_showDigits) {
                  p.setFont(m_fontClue);
                  p.drawText(clueRect, Qt::AlignCenter | Qt::AlignHCenter,
                             digits[m_pData->getClueRight(col, row)]);
@@ -102,7 +118,7 @@ void KkrBoard::drawCell(QPainter &p, int col, int row, bool bDrawValue) const
         if(m_pData->getClueDown(col, row) != pd::CLOSED_CLUE) {
             const QRect clueRect{getClueRectDown(cellRect)};
             p.fillRect(clueRect, brWhite);
-            if(bDrawValue) {
+            if(m_showDigits) {
                  p.setFont(m_fontClue);
                  p.drawText(clueRect, Qt::AlignCenter | Qt::AlignHCenter,
                             digits[m_pData->getClueDown(col, row)]);
@@ -140,7 +156,7 @@ void KkrBoard::paintEvent(QPaintEvent *e)
     // cell contents
     for(int y = 0; y < m_pData->getNumRows(); ++y) {
         for(int x = 0; x < m_pData->getNumCols(); ++x) {
-            drawCell(p, x, y, true);
+            drawCell(p, x, y);
         }
     }
 }

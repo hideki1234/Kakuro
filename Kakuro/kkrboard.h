@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QFont>
 #include "problemdata.h"
+#include "playstatus.h"
 #include <memory>
 
 namespace pd = problemdata;
@@ -29,6 +30,9 @@ class KkrBoard : public QWidget
     QFont m_fontAns;
     QFont m_fontClue;
 
+    // paint flags
+    bool m_showDigits;
+
     std::shared_ptr<pd::ProblemData> m_pData;
 
     QRect getCellRect(int col, int row) const;
@@ -36,7 +40,7 @@ class KkrBoard : public QWidget
     QRect getClueRectDown(const QRect &cellRect) const;
 
     // paint sub methods
-    void drawCell(QPainter &p, int col, int row, bool bDrawValue = false) const;
+    void drawCell(QPainter &p, int col, int row) const;
 
 public:
     explicit KkrBoard(QWidget *parent = 0);
@@ -45,6 +49,7 @@ signals:
 
 public slots:
     void updateData(std::shared_ptr<pd::ProblemData> pNewData);
+    void updateStatus(playstatus::Status newStatus);
 
 protected:
     void paintEvent(QPaintEvent * e) override;

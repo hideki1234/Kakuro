@@ -8,7 +8,7 @@
 
 namespace playstatus {
 
-enum Status {
+enum class Status {
     NODATA,
     READY,
     INPLAY,
