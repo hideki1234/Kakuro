@@ -16,7 +16,7 @@
 // initializations
 void MainWindow::makeCoreWidgets()
 {
-    m_pButtonPlay = new QPushButton{tr("Play")};
+    m_pButtonPlay = new QPushButton{tr("Start")};
     m_pButtonPlay->setMinimumWidth(BUTTON_WIDTH);
     m_pButtonPlay->setEnabled(false);
     m_pButtonUndo = new QPushButton{tr("Undo")};
@@ -85,6 +85,15 @@ void MainWindow::setupMainMenu()
 
     // Play
     QMenu * pMenuPlay = new QMenu{tr("&Play")};
+    m_pActionPlay = pMenuPlay->addAction(tr("&Start"), &m_ps, &ps::PlayStatus::playPressed);
+    m_pActionUndo = pMenuPlay->addAction(tr("&Undo"));
+    m_pActionCheck = pMenuPlay->addAction(tr("Chec&k"));
+    pMenuPlay->addSeparator();
+    m_pActionGiveup = pMenuPlay->addAction(tr("Give &up"), this, &MainWindow::makeSureGiveup);
+    m_pActionPlay->setEnabled(false);
+    m_pActionUndo->setEnabled(false);
+    m_pActionCheck->setEnabled(false);
+    m_pActionGiveup->setEnabled(false);
     pMainMenu->addMenu(pMenuPlay);
 
     // View
@@ -128,6 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
     // play status change
     connect(&m_ps, &playstatus::PlayStatus::statusChanged, m_pKkrBoard, &KkrBoard::updateStatus);
     connect(&m_ps, &playstatus::PlayStatus::statusChanged, this, &MainWindow::updateStatus);
+    connect(this, &MainWindow::giveup, &m_ps, &playstatus::PlayStatus::giveup);
 
     // timer
     connect(&m_secTimer, &QTimer::timeout, this, &MainWindow::timeout);
@@ -187,40 +197,59 @@ void MainWindow::open()
 
 void MainWindow::updateStatus(playstatus::Status newStatus)
 {
-    static const QString sPlay{tr("Play")};
-    static const QString sPause{tr("Pause")};
-    static const QString sResume{tr("Resume")};
+    static const QString sStartB{tr("Start")};
+    static const QString sPauseB{tr("Pause")};
+    static const QString sResumeB{tr("Resume")};
+    static const QString sStartM{tr("&Start")};
+    static const QString sPauseM{tr("&Pause")};
+    static const QString sResumeM{tr("&Resume")};
 
     switch(newStatus) {
     case ps::Status::NODATA:
-        m_pButtonPlay->setText(sPlay);
+        m_pButtonPlay->setText(sStartB);
         m_pButtonPlay->setEnabled(false);
         m_pButtonCheck->setEnabled(false);
+        m_pActionPlay->setText(sStartM);
+        m_pActionPlay->setEnabled(false);
+        m_pActionCheck->setEnabled(false);
+        m_pActionGiveup->setEnabled(false);
         m_secTimer.stop();
         setTimeIndicator(true);
         break;
     case ps::Status::READY:
-        m_pButtonPlay->setText(sPlay);
+        m_pButtonPlay->setText(sStartB);
         m_pButtonPlay->setEnabled(true);
         m_pButtonCheck->setEnabled(false);
+        m_pActionPlay->setText(sStartM);
+        m_pActionPlay->setEnabled(true);
+        m_pActionCheck->setEnabled(false);
+        m_pActionGiveup->setEnabled(false);
         m_secTimer.stop();
         setTimeIndicator(true);
         break;
     case ps::Status::INPLAY:
-        m_pButtonPlay->setText(sPause);
+        m_pButtonPlay->setText(sPauseB);
         m_pButtonCheck->setEnabled(true);
+        m_pActionPlay->setText(sPauseM);
+        m_pActionCheck->setEnabled(true);
+        m_pActionGiveup->setEnabled(true);
         setTimeIndicator();
         m_secTimer.start(TIMER_INTERVAL);
         break;
     case ps::Status::PAUSED:
-        m_pButtonPlay->setText(sResume);
+        m_pButtonPlay->setText(sResumeB);
         m_pButtonCheck->setEnabled(false);
+        m_pActionPlay->setText(sResumeM);
+        m_pActionCheck->setEnabled(false);
         m_secTimer.stop();
         break;
     case ps::Status::DONE:
-        m_pButtonPlay->setText(sPlay);
+        m_pButtonPlay->setText(sStartB);
         m_pButtonPlay->setEnabled(false);
         m_pButtonCheck->setEnabled(false);
+        m_pActionPlay->setEnabled(false);
+        m_pActionCheck->setEnabled(false);
+        m_pActionGiveup->setEnabled(false);
         m_secTimer.stop();
         setTimeIndicator();
         break;
@@ -230,4 +259,11 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
 void MainWindow::timeout()
 {
     setTimeIndicator();
+}
+
+void MainWindow::makeSureGiveup()
+{
+    const auto ans = QMessageBox::question(this, tr("Kakuro"), tr("Give up? Really!?"));
+    if(ans == QMessageBox::Yes)
+        emit giveup();
 }

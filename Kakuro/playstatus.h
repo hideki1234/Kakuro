@@ -37,6 +37,7 @@ public slots:
     void updateData(std::shared_ptr<problemdata::ProblemData> pNewData);
     void playPressed();
     void solved();
+    void giveup();
 
 signals:
     void statusChanged(Status newStatus);

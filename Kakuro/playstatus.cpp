@@ -22,7 +22,7 @@ void PlayStatus::updateData(std::shared_ptr<problemdata::ProblemData> /*pNewData
 {
     m_status = Status::READY;
     m_timeOffset = 0;
-    statusChanged(m_status);
+    emit statusChanged(m_status);
 }
 
 void PlayStatus::playPressed()
@@ -41,7 +41,7 @@ void PlayStatus::playPressed()
     default:
         return;
     }
-    statusChanged(m_status);
+    emit statusChanged(m_status);
 }
 
 void PlayStatus::solved()
@@ -51,7 +51,20 @@ void PlayStatus::solved()
         m_time.invalidate();
     }
     m_status = Status::DONE;
-    statusChanged(m_status);
+    emit statusChanged(m_status);
+}
+
+void PlayStatus::giveup()
+{
+    if(m_status != Status::INPLAY && m_status != Status::PAUSED)
+        return;
+
+    if(m_status == Status::INPLAY) {
+        m_timeOffset += m_time.elapsed();
+        m_time.invalidate();
+    }
+    m_status = Status::DONE;
+    emit statusChanged(m_status);
 }
 
 }   // namespace playstatus

@@ -37,6 +37,12 @@ class MainWindow : public QMainWindow
     // Menus
     QMenu *m_pMenuView;
 
+    // Actions
+    QAction *m_pActionPlay;
+    QAction *m_pActionUndo;
+    QAction *m_pActionCheck;
+    QAction *m_pActionGiveup;
+
     QTimer m_secTimer;
 
     /*
@@ -76,9 +82,11 @@ private slots:
     void open();
     void updateStatus(playstatus::Status newStatus);
     void timeout();
+    void makeSureGiveup();
 
 signals:
     void newData(std::shared_ptr<pd::ProblemData> pData);
+    void giveup();
 };
 
 #endif // MAINWINDOW_H
