@@ -20,7 +20,12 @@ public:
 private Q_SLOTS:
     void initTestCase();
     void testStatusChanged();
+    void testGiveupFromNodata();
+    void testGiveupFromReady();
+    void testGiveupFromInplay();
+    void testGiveupFromPaused();
     void testElapsedTime();
+    void testElpasedAfterGiveup();
 };
 
 PlayStatusTest::PlayStatusTest()
@@ -77,6 +82,81 @@ void PlayStatusTest::testStatusChanged()
     QCOMPARE(s, ps::Status::DONE);
 }
 
+void PlayStatusTest::testGiveupFromNodata()
+{
+    ps::PlayStatus target;
+    qRegisterMetaType<playstatus::Status>("Status");
+    QSignalSpy spy(&target, &ps::PlayStatus::statusChanged);
+
+    // you can't give up without data
+    target.giveup();
+    QCOMPARE(spy.count(), 0);
+}
+
+void PlayStatusTest::testGiveupFromReady()
+{
+    ps::PlayStatus target;
+    qRegisterMetaType<playstatus::Status>("Status");
+    QSignalSpy spy(&target, &ps::PlayStatus::statusChanged);
+
+    // NODATA -> READY
+    std::shared_ptr<pd::ProblemData> pMockPd{pd::ProblemData::problemLoader("dummy")};
+    target.updateData(pMockPd);
+    // QCOMPARE(spy.count(), 1);
+
+    // you can't give up before start
+    target.giveup();
+    QCOMPARE(spy.count(), 1);
+}
+
+void PlayStatusTest::testGiveupFromInplay()
+{
+    ps::PlayStatus target;
+    qRegisterMetaType<playstatus::Status>("Status");
+    QSignalSpy spy(&target, &ps::PlayStatus::statusChanged);
+
+    // NODATA -> READY
+    std::shared_ptr<pd::ProblemData> pMockPd{pd::ProblemData::problemLoader("dummy")};
+    target.updateData(pMockPd);
+    // QCOMPARE(spy.count(), 1);
+
+    // READY -> INPLAY
+    target.playPressed();
+    // QCOMPARE(spy.count(), 2);
+
+    target.giveup();
+    QCOMPARE(spy.count(), 3);
+    ps::Status s;
+    s = qvariant_cast<ps::Status>(spy.at(2).at(0));
+    QCOMPARE(s, ps::Status::DONE);
+}
+
+void PlayStatusTest::testGiveupFromPaused()
+{
+    ps::PlayStatus target;
+    qRegisterMetaType<playstatus::Status>("Status");
+    QSignalSpy spy(&target, &ps::PlayStatus::statusChanged);
+
+    // NODATA -> READY
+    std::shared_ptr<pd::ProblemData> pMockPd{pd::ProblemData::problemLoader("dummy")};
+    target.updateData(pMockPd);
+    // QCOMPARE(spy.count(), 1);
+
+    // READY -> INPLAY
+    target.playPressed();
+    // QCOMPARE(spy.count(), 2);
+
+    // INPLAY -> PAUSED
+    target.playPressed();
+    // QCOMPARE(spy.count(), 3);
+
+    target.giveup();
+    QCOMPARE(spy.count(), 4);
+    ps::Status s;
+    s = qvariant_cast<ps::Status>(spy.at(3).at(0));
+    QCOMPARE(s, ps::Status::DONE);
+}
+
 void PlayStatusTest::testElapsedTime()
 {
     static const unsigned long WAIT_MS = 100ul;
@@ -116,6 +196,27 @@ void PlayStatusTest::testElapsedTime()
 
     // DONE
     target.solved();
+    s = target.getElapsedTime();
+    QThread::msleep(WAIT_MS);
+    QCOMPARE(target.getElapsedTime(), s);
+}
+
+void PlayStatusTest::testElpasedAfterGiveup()
+{
+    static const unsigned long WAIT_MS = 100ul;
+    ps::PlayStatus target;
+
+    qint64 s;
+
+    // NODATA -> READY
+    std::shared_ptr<pd::ProblemData> pMockPd{pd::ProblemData::problemLoader("dummy")};
+    target.updateData(pMockPd);
+
+    // READY -> INPLAY
+    target.playPressed();
+
+    // give up
+    target.giveup();
     s = target.getElapsedTime();
     QThread::msleep(WAIT_MS);
     QCOMPARE(target.getElapsedTime(), s);
