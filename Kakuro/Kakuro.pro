@@ -16,11 +16,15 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     kkrboard.cpp \
     problemdata.cpp \
-    playstatus.cpp
+    playstatus.cpp \
+    useranswer.cpp \
+    useranswermanager.cpp
 
 HEADERS  += mainwindow.h \
     kkrboard.h \
     problemdata.h \
-    playstatus.h
+    playstatus.h \
+    useranswer.h \
+    useranswermanager.h
 
 CONFIG += c++11

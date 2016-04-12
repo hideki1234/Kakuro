@@ -12,6 +12,7 @@ TARGET = tst_problemloadertest
 CONFIG   += console
 CONFIG   -= app_bundle
 CONFIG   += testcase
+CONFIG   += c+=11
 
 TEMPLATE = app
 

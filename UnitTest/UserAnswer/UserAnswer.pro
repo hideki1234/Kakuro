@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2016-04-09T01:16:40
+# Project created by QtCreator 2016-04-12T01:33:38
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += testlib
 
 QT       -= gui
 
-TARGET = tst_playstatustest
+TARGET = tst_useranswertest
 CONFIG   += console
 CONFIG   -= app_bundle
 CONFIG   += testcase
@@ -17,10 +17,12 @@ CONFIG   += c++11
 TEMPLATE = app
 
 
-SOURCES += tst_playstatustest.cpp \
-    ../../Kakuro/playstatus.cpp \
-    mock_problemdata.cpp
+SOURCES += tst_useranswertest.cpp \
+    mock4useranswer.cpp \
+    ../../Kakuro/useranswer.cpp \
+    ../../Kakuro/useranswermanager.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
-    ../../Kakuro/playstatus.h
+    ../../Kakuro/useranswer.h \
+    ../../Kakuro/useranswermanager.h

@@ -2,4 +2,5 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     ProblemLoader \
-    PlayStatus
+    PlayStatus \
+    UserAnswer
