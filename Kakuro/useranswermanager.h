@@ -17,14 +17,15 @@ struct CellData {
     QPoint p;
     int answer;
 };
-static const int ANSWER_NODATA = 0;
 
 class UserAnswerManager : public QObject
 {
     Q_OBJECT
+    std::shared_ptr<UserAnswer> m_answer;
 
 public:
     UserAnswerManager();
+    virtual ~UserAnswerManager();
 
     UserAnswerManager(const UserAnswerManager&) = delete;
     UserAnswerManager &operator=(const UserAnswerManager&) = delete;
