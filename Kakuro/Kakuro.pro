@@ -18,13 +18,18 @@ SOURCES += main.cpp\
     problemdata.cpp \
     playstatus.cpp \
     useranswer.cpp \
-    useranswermanager.cpp
+    useranswermanager.cpp \
+    inputdrag.cpp \
+    inputfactory.cpp
 
 HEADERS  += mainwindow.h \
     kkrboard.h \
     problemdata.h \
     playstatus.h \
     useranswer.h \
-    useranswermanager.h
+    useranswermanager.h \
+    cosmetic.h \
+    inputfactory.h \
+    inputdrag.h
 
 CONFIG += c++11

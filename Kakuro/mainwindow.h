@@ -11,9 +11,11 @@
 #include "kkrboard.h"
 #include "problemdata.h"
 #include "playstatus.h"
+#include "useranswermanager.h"
 
 namespace pd = problemdata;
 namespace ps = playstatus;
+namespace ua = useranswer;
 
 class MainWindow : public QMainWindow
 {
@@ -49,6 +51,7 @@ class MainWindow : public QMainWindow
      * models
      */
     ps::PlayStatus m_ps;
+    ua::UserAnswerManager m_uam;
 
     /*
      * dimensions

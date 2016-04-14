@@ -128,8 +128,9 @@ MainWindow::MainWindow(QWidget *parent)
      * connections
      */
     // signal in loading data
-    connect(this, &MainWindow::newData, m_pKkrBoard, &KkrBoard::updateData);
+    connect(this, &MainWindow::newData, m_pKkrBoard, &KkrBoard::updateProblem);
     connect(this, &MainWindow::newData, &m_ps, &playstatus::PlayStatus::updateData);
+    connect(this, &MainWindow::newData, &m_uam, &ua::UserAnswerManager::updateData);
 
     // button signals
     connect(m_pButtonPlay, &QPushButton::clicked, &m_ps, &ps::PlayStatus::playPressed);
@@ -138,6 +139,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&m_ps, &playstatus::PlayStatus::statusChanged, m_pKkrBoard, &KkrBoard::updateStatus);
     connect(&m_ps, &playstatus::PlayStatus::statusChanged, this, &MainWindow::updateStatus);
     connect(this, &MainWindow::giveup, &m_ps, &playstatus::PlayStatus::giveup);
+
+    // user answer signals
+    connect(&m_uam, &ua::UserAnswerManager::newUserAnswer, m_pKkrBoard, &KkrBoard::updateUserAnswer);
+    connect(m_pKkrBoard, &KkrBoard::updateCellAnswer, &m_uam, &ua::UserAnswerManager::updateCellAnswer);
+    connect(&m_uam, &ua::UserAnswerManager::updateCell, m_pKkrBoard, &KkrBoard::updateAnswer);
 
     // timer
     connect(&m_secTimer, &QTimer::timeout, this, &MainWindow::timeout);

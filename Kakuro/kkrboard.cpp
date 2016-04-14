@@ -1,21 +1,31 @@
 #include "kkrboard.h"
 #include <QPainter>
 #include <QPalette>
-#include <QDebug>
 #include <QFont>
+#include <QDebug>
 #include <array>
+#include "inputfactory.h"
 
 KkrBoard::KkrBoard(QWidget *parent)
     : QWidget(parent)
-    , m_fontAns("consolas")
-    , m_fontClue("consolas")
+    , m_fontAns(FONT_ANS)
+    , m_fontClue(FONT_CLUE)
     , m_showDigits(true)
 {
+    m_pCellInput = cellInputFactory(this);
     m_fontAns.setPixelSize(CELL_WIDTH);
     m_fontClue.setPixelSize(CLUE_WIDTH);
 }
 
-void KkrBoard::updateData(std::shared_ptr<problemdata::ProblemData> pNewData)
+KkrBoard::~KkrBoard()
+{
+    cellInputCleanup();
+}
+
+/*
+ * public slots
+ */
+void KkrBoard::updateProblem(std::shared_ptr<problemdata::ProblemData> pNewData)
 {
     m_showDigits = true;
     m_pData = pNewData;
@@ -46,6 +56,31 @@ void KkrBoard::updateStatus(playstatus::Status newStatus)
     update();
 }
 
+void KkrBoard::updateUserAnswer(useranswer::SharedAnswer pNewAns)
+{
+    m_pAns = pNewAns;
+    // no update();
+}
+
+void KkrBoard::updateAnswer(QPoint cellPos)
+{
+    qDebug() << "KkrBoard::updateCell:" << cellPos;
+    update();
+}
+
+void KkrBoard::cellInput(int value)
+{
+    ua::CellData cd;
+    cd.p.setX(m_inCol); cd.p.setY(m_inRow);
+    cd.answer = value;
+
+    qDebug() << "KkrBoard::cellInputFromUser:" << cd.p << ' ' << value;
+    emit updateCellAnswer(cd);
+}
+
+/*
+ * regular methods
+ */
 QRect KkrBoard::getCellRect(int col, int row) const
 {
     const int x = MARGIN + FRAME_THICK + col * (CELL_WIDTH + BORDER_THICK);
@@ -69,6 +104,29 @@ QRect KkrBoard::getClueRectDown(const QRect &cellRect) const
     return QRect(x, y, CLUE_WIDTH, CLUE_WIDTH);
 }
 
+QPoint KkrBoard::getCellCoord(int x, int y) const
+{
+    QPoint ret(-1, -1);
+    static const int ORIGIN = MARGIN + FRAME_THICK;
+    static const int CELL_FRAME_WIDTH = CELL_WIDTH + BORDER_THICK;
+
+    x -= ORIGIN; y -= ORIGIN;
+    if(x < 0 || y < 0)
+        return ret;
+
+    if(x % CELL_FRAME_WIDTH == CELL_WIDTH || y % CELL_FRAME_WIDTH == CELL_WIDTH)
+        return ret; // on the cell border
+
+    const int col = x / CELL_FRAME_WIDTH;
+    const int row = y / CELL_FRAME_WIDTH;
+    if(col >= m_pData->getNumCols() || row >= m_pData->getNumRows())
+        return ret;
+
+    ret.setX(col); ret.setY(row);
+
+    return ret;
+}
+
 void KkrBoard::drawCell(QPainter &p, int col, int row) const
 {
     static const char * digits[] = {
@@ -81,10 +139,12 @@ void KkrBoard::drawCell(QPainter &p, int col, int row) const
     const QRect cellRect{getCellRect(col, row)};
     switch(m_pData->getCellType(col, row)) {
     case pd::CellType::CellAnswer:
-        /* TODO: show user inputs instead of answers */
         if(m_showDigits) {
-            p.setFont(m_fontAns);
-            p.drawText(cellRect, Qt::AlignCenter | Qt::AlignHCenter, digits[m_pData->getAnswer(col, row)]);
+            const int ans = m_pAns->getAnswer(col, row);
+            if(ans != ua::ANSWER_NODATA) {
+                p.setFont(m_fontAns);
+                p.drawText(cellRect, Qt::AlignCenter | Qt::AlignHCenter, digits[ans]);
+            }
         }
         break;
     case pd::CellType::CellClue:
@@ -131,7 +191,7 @@ void KkrBoard::drawCell(QPainter &p, int col, int row) const
     }
 }
 
-void KkrBoard::paintEvent(QPaintEvent *e)
+void KkrBoard::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
 
@@ -157,6 +217,22 @@ void KkrBoard::paintEvent(QPaintEvent *e)
     for(int y = 0; y < m_pData->getNumRows(); ++y) {
         for(int x = 0; x < m_pData->getNumCols(); ++x) {
             drawCell(p, x, y);
+        }
+    }
+}
+
+void KkrBoard::mousePressEvent(QMouseEvent *e)
+{
+    if(m_showDigits && e->button() == Qt::RightButton) {
+        const QPoint pt = getCellCoord(e->x(), e->y());
+        if(pt.x() >= 0 && m_pData->getCellType(pt.x(), pt.y()) == pd::CellType::CellAnswer) {
+            m_inCol = pt.x(); m_inRow = pt.y();
+            m_inValue = m_pAns->getAnswer(pt.x(), pt.y());
+            qDebug() << "KkrBoard activateing cell input";
+            const QRect cellRect = getCellRect(pt);
+            m_pCellInput->move(cellRect.x(), cellRect.y());
+            m_pCellInput->setEnabled(true);
+            m_pCellInput->setVisible(true);
         }
     }
 }
