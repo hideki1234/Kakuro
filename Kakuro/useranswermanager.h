@@ -21,7 +21,8 @@ struct CellData {
 class UserAnswerManager : public QObject
 {
     Q_OBJECT
-    std::shared_ptr<UserAnswer> m_answer;
+    std::shared_ptr<problemdata::ProblemData> m_pProblem;
+    std::shared_ptr<UserAnswer> m_pAnswer;
 
 public:
     UserAnswerManager();
