@@ -243,6 +243,7 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         m_pActionGiveup->setEnabled(true);
         setTimeIndicator();
         m_secTimer.start(TIMER_INTERVAL);
+        m_pKkrBoard->setFocus();
         break;
     case ps::Status::PAUSED:
         m_pButtonPlay->setText(sResumeB);

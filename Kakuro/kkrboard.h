@@ -43,6 +43,10 @@ class KkrBoard : public QWidget
     int m_inValue;
     QWidget *m_pCellInput;
 
+    // input cursor
+    int m_curCol;
+    int m_curRow;
+
     /*
      * coord conversion
      */
@@ -57,8 +61,16 @@ class KkrBoard : public QWidget
     QPoint getCellCoord(int x, int y) const;
         // if widget coord is not on a cell, returns (-1, -1)
 
-    // paint sub methods
+    /*
+     * paint sub methods
+     */
     void drawCell(QPainter &p, int col, int row) const;
+    void resetCursor(int newCol, int newRow);
+
+    /*
+     * key inputs
+     */
+    void keyCursor(QKeyEvent *e);
 
 public:
     explicit KkrBoard(QWidget *parent = 0);
@@ -84,6 +96,7 @@ protected:
      */
     void paintEvent(QPaintEvent * e) override;
     void mousePressEvent(QMouseEvent *e) override;
+    void keyReleaseEvent(QKeyEvent *e) override;
 };
 
 #endif // KKRBOARD_H

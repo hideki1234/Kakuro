@@ -16,6 +16,7 @@ KkrBoard::KkrBoard(QWidget *parent)
     m_pCellInput = cellInputFactory(this);
     m_fontAns.setPixelSize(CELL_WIDTH);
     m_fontClue.setPixelSize(CLUE_WIDTH);
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 KkrBoard::~KkrBoard()
@@ -31,6 +32,12 @@ void KkrBoard::updateProblem(std::shared_ptr<problemdata::ProblemData> pNewData)
     m_showDigits = false;
     m_acceptInput = false;
     m_pData = pNewData;
+
+    for(m_curRow = 1; m_curRow < m_pData->getNumRows(); ++m_curRow)
+        for(m_curCol = 1; m_curCol < m_pData->getNumCols(); ++m_curCol)
+            if(m_pData->getCellType(m_curCol, m_curRow) == pd::CellType::CellAnswer)
+                goto found;
+    found:
 
     // calculate sizes
     m_inner_width = (CELL_WIDTH + BORDER_THICK) * m_pData->getNumCols() - BORDER_THICK;
@@ -147,6 +154,10 @@ void KkrBoard::drawCell(QPainter &p, int col, int row) const
     switch(m_pData->getCellType(col, row)) {
     case pd::CellType::CellAnswer:
         if(m_showDigits) {
+            if(m_curCol == col && m_curRow == row) {
+                QBrush brCyan(Qt::cyan);
+                p.fillRect(cellRect, brCyan);
+            }
             const int ans = m_pAns->getAnswer(col, row);
             if(ans != ua::ANSWER_NODATA) {
                 p.setFont(m_fontAns);
@@ -198,6 +209,16 @@ void KkrBoard::drawCell(QPainter &p, int col, int row) const
     }
 }
 
+void KkrBoard::resetCursor(int newCol, int newRow)
+{
+    Q_ASSERT(newCol >= 1 && newCol < m_pData->getNumCols());
+    Q_ASSERT(newRow >= 1 && newRow < m_pData->getNumRows());
+    Q_ASSERT(m_pData->getCellType(newCol, newRow) == pd::CellType::CellAnswer);
+
+    m_curCol = newCol; m_curRow = newRow;
+    update(); // can be optimized
+}
+
 void KkrBoard::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
@@ -235,11 +256,86 @@ void KkrBoard::mousePressEvent(QMouseEvent *e)
         if(pt.x() >= 0 && m_pData->getCellType(pt.x(), pt.y()) == pd::CellType::CellAnswer) {
             m_inCol = pt.x(); m_inRow = pt.y();
             m_inValue = m_pAns->getAnswer(pt.x(), pt.y());
-            qDebug() << "KkrBoard activateing cell input";
+
+            resetCursor(m_inCol, m_inRow);
+
+            // invoke mouse input widget
             const QRect cellRect = getCellRect(pt);
             m_pCellInput->move(cellRect.x(), cellRect.y());
             m_pCellInput->setEnabled(true);
             m_pCellInput->setVisible(true);
         }
+    }
+}
+
+void KkrBoard::keyCursor(QKeyEvent *e)
+{
+    int newCol;
+    int newRow;
+
+    switch(e->key()) {
+    case Qt::Key_Up:
+        newCol = m_curCol;
+        newRow = m_curRow - 1;
+        while(newRow >= 1 && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
+            --newRow;
+        if(newRow < 1)
+            return;
+        break;
+
+    case Qt::Key_Down: {
+        const int numRow = m_pData->getNumRows();
+        newCol = m_curCol;
+        newRow = m_curRow + 1;
+        while(newRow < numRow
+              && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
+            ++newRow;
+        if(newRow >= numRow)
+            return;
+    }
+        break;
+
+    case Qt::Key_Left:
+        newCol = m_curCol - 1;
+        newRow = m_curRow;
+        while(newCol >= 1 && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
+            --newCol;
+        if(newCol < 1)
+            return;
+        break;
+
+    case Qt::Key_Right: {
+        const int numCol = m_pData->getNumCols();
+        newCol = m_curCol + 1;
+        newRow = m_curRow;
+        while(newCol < numCol
+              && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
+            ++newCol;
+        if(newCol >= numCol)
+            return;
+    }
+        break;
+
+    default:
+        // this method only accespts cursor keys. mustn't reach here.
+        Q_ASSERT(false);
+        return;
+    }
+
+    resetCursor(newCol, newRow);
+}
+
+void KkrBoard::keyReleaseEvent(QKeyEvent *e)
+{
+    if(!m_acceptInput)
+        return;
+
+    switch(e->key()) {
+    case Qt::Key_Up:
+    case Qt::Key_Down:
+    case Qt::Key_Left:
+    case Qt::Key_Right:
+        keyCursor(e);
+        break;
     }
 }
