@@ -86,8 +86,13 @@ void MainWindow::setupMainMenu()
     // Play
     QMenu * pMenuPlay = new QMenu{tr("&Play")};
     m_pActionPlay = pMenuPlay->addAction(tr("&Start"), &m_ps, &ps::PlayStatus::playPressed);
+    m_pActionPlay->setShortcutContext(Qt::ApplicationShortcut);
     m_pActionUndo = pMenuPlay->addAction(tr("&Undo"));
-    m_pActionCheck = pMenuPlay->addAction(tr("Chec&k"));
+    m_pActionUndo->setShortcutContext(Qt::ApplicationShortcut);
+    m_pActionUndo->setShortcut(Qt::Key_U | Qt::ControlModifier);
+    m_pActionCheck = pMenuPlay->addAction(tr("Chec&k"), this, &MainWindow::checkIt);
+    m_pActionCheck->setShortcutContext(Qt::ApplicationShortcut);
+    m_pActionCheck->setShortcut(Qt::Key_K | Qt::ControlModifier);
     pMenuPlay->addSeparator();
     m_pActionGiveup = pMenuPlay->addAction(tr("Give &up"), this, &MainWindow::makeSureGiveup);
     m_pActionPlay->setEnabled(false);
@@ -229,6 +234,7 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         m_pButtonPlay->setEnabled(true);
         m_pButtonCheck->setEnabled(false);
         m_pActionPlay->setText(sStartM);
+        m_pActionPlay->setShortcut(Qt::Key_S | Qt::ControlModifier);
         m_pActionPlay->setEnabled(true);
         m_pActionCheck->setEnabled(false);
         m_pActionGiveup->setEnabled(false);
@@ -239,6 +245,7 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         m_pButtonPlay->setText(sPauseB);
         m_pButtonCheck->setEnabled(true);
         m_pActionPlay->setText(sPauseM);
+        m_pActionPlay->setShortcut(Qt::Key_P | Qt::ControlModifier);
         m_pActionCheck->setEnabled(true);
         m_pActionGiveup->setEnabled(true);
         setTimeIndicator();
@@ -249,6 +256,7 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         m_pButtonPlay->setText(sResumeB);
         m_pButtonCheck->setEnabled(false);
         m_pActionPlay->setText(sResumeM);
+        m_pActionPlay->setShortcut(Qt::Key_R | Qt::ControlModifier);
         m_pActionCheck->setEnabled(false);
         m_secTimer.stop();
         break;

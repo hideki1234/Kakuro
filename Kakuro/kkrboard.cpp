@@ -2,7 +2,6 @@
 #include <QPainter>
 #include <QPalette>
 #include <QFont>
-#include <QDebug>
 #include <array>
 #include "inputfactory.h"
 
@@ -76,9 +75,8 @@ void KkrBoard::updateUserAnswer(useranswer::SharedAnswer pNewAns)
     // no update();
 }
 
-void KkrBoard::renderAnswer(QPoint cellPos)
+void KkrBoard::renderAnswer(QPoint /*cellPos*/)
 {
-    qDebug() << "KkrBoard::updateCell:" << cellPos;
     update();
 }
 
@@ -88,7 +86,6 @@ void KkrBoard::cellInput(int value)
     cd.p.setX(m_inCol); cd.p.setY(m_inRow);
     cd.answer = value;
 
-    qDebug() << "KkrBoard::cellInputFromUser:" << cd.p << ' ' << value;
     emit newAnswerInput(cd);
 }
 
@@ -273,8 +270,11 @@ void KkrBoard::keyCursor(QKeyEvent *e)
     int newCol;
     int newRow;
 
+    if(e->modifiers() != Qt::NoModifier)
+        return;
+
     switch(e->key()) {
-    case Qt::Key_Up:
+    case Qt::Key_Up: case Qt::Key_K:
         newCol = m_curCol;
         newRow = m_curRow - 1;
         while(newRow >= 1 && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
@@ -283,7 +283,8 @@ void KkrBoard::keyCursor(QKeyEvent *e)
             return;
         break;
 
-    case Qt::Key_Down: {
+    case Qt::Key_Down: case Qt::Key_J:
+    {
         const int numRow = m_pData->getNumRows();
         newCol = m_curCol;
         newRow = m_curRow + 1;
@@ -295,7 +296,7 @@ void KkrBoard::keyCursor(QKeyEvent *e)
     }
         break;
 
-    case Qt::Key_Left:
+    case Qt::Key_Left: case Qt::Key_H:
         newCol = m_curCol - 1;
         newRow = m_curRow;
         while(newCol >= 1 && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
@@ -304,7 +305,8 @@ void KkrBoard::keyCursor(QKeyEvent *e)
             return;
         break;
 
-    case Qt::Key_Right: {
+    case Qt::Key_Right: case Qt::Key_L:
+    {
         const int numCol = m_pData->getNumCols();
         newCol = m_curCol + 1;
         newRow = m_curRow;
@@ -317,12 +319,64 @@ void KkrBoard::keyCursor(QKeyEvent *e)
         break;
 
     default:
-        // this method only accespts cursor keys. mustn't reach here.
+        // this method only accespts cursor keys and vi move keys.
+        // mustn't reach here.
         Q_ASSERT(false);
         return;
     }
 
     resetCursor(newCol, newRow);
+}
+
+void KkrBoard::keyData(QKeyEvent *e)
+{
+    if(e->modifiers() != Qt::NoModifier)
+        return;
+
+    ua::CellData newData;
+
+    switch (e->key()) {
+    case Qt::Key_Space:
+    case Qt::Key_0:
+        // delete answer
+        newData.answer = ua::ANSWER_NODATA;
+        break;
+    case Qt::Key_1:
+        newData.answer = 1;
+        break;
+    case Qt::Key_2:
+        newData.answer = 2;
+        break;
+    case Qt::Key_3:
+        newData.answer = 3;
+        break;
+    case Qt::Key_4:
+        newData.answer = 4;
+        break;
+    case Qt::Key_5:
+        newData.answer = 5;
+        break;
+    case Qt::Key_6:
+        newData.answer = 6;
+        break;
+    case Qt::Key_7:
+        newData.answer = 7;
+        break;
+    case Qt::Key_8:
+        newData.answer = 8;
+        break;
+    case Qt::Key_9:
+        newData.answer = 9;
+        break;
+    default:
+        // this method only number keys and space. mustn't reach here.
+        Q_ASSERT(false);
+        break;
+    }
+
+    newData.p.setX(m_curCol); newData.p.setY(m_curRow);
+
+    emit newAnswerInput(newData);
 }
 
 void KkrBoard::keyReleaseEvent(QKeyEvent *e)
@@ -331,11 +385,18 @@ void KkrBoard::keyReleaseEvent(QKeyEvent *e)
         return;
 
     switch(e->key()) {
-    case Qt::Key_Up:
-    case Qt::Key_Down:
-    case Qt::Key_Left:
-    case Qt::Key_Right:
+    case Qt::Key_Up:    case Qt::Key_K:
+    case Qt::Key_Down:  case Qt::Key_J:
+    case Qt::Key_Left:  case Qt::Key_H:
+    case Qt::Key_Right: case Qt::Key_L:
         keyCursor(e);
+        break;
+
+    case Qt::Key_Space: case Qt::Key_0: // delete answer
+    case Qt::Key_1: case Qt::Key_2: case Qt::Key_3:
+    case Qt::Key_4: case Qt::Key_5: case Qt::Key_6:
+    case Qt::Key_7: case Qt::Key_8: case Qt::Key_9:
+        keyData(e);
         break;
     }
 }

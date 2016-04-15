@@ -71,6 +71,7 @@ class KkrBoard : public QWidget
      * key inputs
      */
     void keyCursor(QKeyEvent *e);
+    void keyData(QKeyEvent *e);
 
 public:
     explicit KkrBoard(QWidget *parent = 0);
