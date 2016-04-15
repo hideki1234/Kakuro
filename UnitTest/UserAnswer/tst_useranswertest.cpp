@@ -18,6 +18,9 @@ public:
 private Q_SLOTS:
     void testCaseInitialize();
     void testCaseCellUpdate();
+    void testCaseSolved();
+    void testCaseNotSolvedWithAnEmptyCell();
+    void testCaseNotSolvedWithAWrongAnswer();
 };
 
 UserAnswerTest::UserAnswerTest()
@@ -88,6 +91,87 @@ void UserAnswerTest::testCaseCellUpdate()
     QCOMPARE(pAns->getAnswer(1,2), useranswer::ANSWER_NODATA);
     QCOMPARE(pAns->getAnswer(2,1), useranswer::ANSWER_NODATA);
     QCOMPARE(pAns->getAnswer(2,2), useranswer::ANSWER_NODATA);
+}
+
+void UserAnswerTest::testCaseSolved()
+{
+    useranswer::UserAnswerManager target;
+
+    const int numCols = 4;
+    const int numRows = 3;
+    const QString sSize = QString::asprintf("%d,%d", numCols, numRows);
+    std::shared_ptr<pd::ProblemData> pProblem{pd::ProblemData::problemLoader(sSize)};
+    target.updateProblem(pProblem);
+
+    useranswer::CellData cellData;
+    cellData.p.setX(1); cellData.p.setY(0); cellData.answer = 2;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(3); cellData.p.setY(0); cellData.answer = 4;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(0); cellData.p.setY(1); cellData.answer = 2;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(2); cellData.p.setY(1); cellData.answer = 4;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(1); cellData.p.setY(2); cellData.answer = 4;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(3); cellData.p.setY(2); cellData.answer = 6;
+    target.updateCellAnswer(cellData);
+
+    QCOMPARE(target.isSolved(), true);
+}
+
+void UserAnswerTest::testCaseNotSolvedWithAnEmptyCell()
+{
+    useranswer::UserAnswerManager target;
+
+    const int numCols = 4;
+    const int numRows = 3;
+    const QString sSize = QString::asprintf("%d,%d", numCols, numRows);
+    std::shared_ptr<pd::ProblemData> pProblem{pd::ProblemData::problemLoader(sSize)};
+    target.updateProblem(pProblem);
+
+    useranswer::CellData cellData;
+    cellData.p.setX(1); cellData.p.setY(0); cellData.answer = 2;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(3); cellData.p.setY(0); cellData.answer = 4;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(0); cellData.p.setY(1); cellData.answer = 2;
+    target.updateCellAnswer(cellData);
+    //cellData.p.setX(2); cellData.p.setY(1); cellData.answer = 4;
+    //target.updateCellAnswer(cellData);
+    cellData.p.setX(1); cellData.p.setY(2); cellData.answer = 4;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(3); cellData.p.setY(2); cellData.answer = 6;
+    target.updateCellAnswer(cellData);
+
+    QCOMPARE(target.isSolved(), false);
+}
+
+void UserAnswerTest::testCaseNotSolvedWithAWrongAnswer()
+{
+    useranswer::UserAnswerManager target;
+
+    const int numCols = 4;
+    const int numRows = 3;
+    const QString sSize = QString::asprintf("%d,%d", numCols, numRows);
+    std::shared_ptr<pd::ProblemData> pProblem{pd::ProblemData::problemLoader(sSize)};
+    target.updateProblem(pProblem);
+
+    useranswer::CellData cellData;
+    cellData.p.setX(1); cellData.p.setY(0); cellData.answer = 2;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(3); cellData.p.setY(0); cellData.answer = 4;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(0); cellData.p.setY(1); cellData.answer = 3/*2*/;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(2); cellData.p.setY(1); cellData.answer = 4;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(1); cellData.p.setY(2); cellData.answer = 4;
+    target.updateCellAnswer(cellData);
+    cellData.p.setX(3); cellData.p.setY(2); cellData.answer = 6;
+    target.updateCellAnswer(cellData);
+
+    QCOMPARE(target.isSolved(), false);
 }
 
 QTEST_APPLESS_MAIN(UserAnswerTest)

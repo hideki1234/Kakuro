@@ -29,7 +29,7 @@ int ProblemData::getNumRows() const
 
 CellType ProblemData::getCellType(int col, int row) const
 {
-    return (col+row)%2 == 0 ? CellType::CellAnswer : CellType::CellClue;
+    return (col+row)%2 == 1 ? CellType::CellAnswer : CellType::CellClue;
 }
 
 int ProblemData::getClueRight(int col, int row) const

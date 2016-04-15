@@ -30,6 +30,8 @@ public:
     UserAnswerManager(const UserAnswerManager&) = delete;
     UserAnswerManager &operator=(const UserAnswerManager&) = delete;
 
+    bool isSolved() const;
+
 signals:
     void newUserAnswer(SharedAnswer pNewAns);
     void newCellAnswer(QPoint cellPos);
