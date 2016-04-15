@@ -134,10 +134,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     // button signals
     connect(m_pButtonPlay, &QPushButton::clicked, &m_ps, &ps::PlayStatus::playPressed);
+    connect(m_pButtonCheck, &QPushButton::clicked, this, &MainWindow::checkIt);
 
     // play status change
     connect(&m_ps, &playstatus::PlayStatus::statusChanged, m_pKkrBoard, &KkrBoard::updateStatus);
     connect(&m_ps, &playstatus::PlayStatus::statusChanged, this, &MainWindow::updateStatus);
+    connect(this, &MainWindow::solved, &m_ps, &playstatus::PlayStatus::solved);
     connect(this, &MainWindow::giveup, &m_ps, &playstatus::PlayStatus::giveup);
 
     // user answer signals
@@ -265,6 +267,16 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
 void MainWindow::timeout()
 {
     setTimeIndicator();
+}
+
+void MainWindow::checkIt()
+{
+    if(m_uam.isSolved()) {
+        emit solved();
+        QMessageBox::information(this, tr("Solved!"), tr("Congratulations!"));
+    } else {
+        QMessageBox::warning(this, tr("Sorry"), tr("The answer is wrong"));
+    }
 }
 
 void MainWindow::makeSureGiveup()

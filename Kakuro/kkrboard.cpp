@@ -10,7 +10,8 @@ KkrBoard::KkrBoard(QWidget *parent)
     : QWidget(parent)
     , m_fontAns(FONT_ANS)
     , m_fontClue(FONT_CLUE)
-    , m_showDigits(true)
+    , m_showDigits(false)
+    , m_acceptInput(false)
 {
     m_pCellInput = cellInputFactory(this);
     m_fontAns.setPixelSize(CELL_WIDTH);
@@ -27,7 +28,8 @@ KkrBoard::~KkrBoard()
  */
 void KkrBoard::updateProblem(std::shared_ptr<problemdata::ProblemData> pNewData)
 {
-    m_showDigits = true;
+    m_showDigits = false;
+    m_acceptInput = false;
     m_pData = pNewData;
 
     // calculate sizes
@@ -47,11 +49,16 @@ void KkrBoard::updateStatus(playstatus::Status newStatus)
 {
     switch(newStatus) {
     case playstatus::Status::INPLAY:
+        m_showDigits = true;
+        m_acceptInput = true;
+        break;
     case playstatus::Status::DONE:
         m_showDigits = true;
+        m_acceptInput = false;
         break;
     default:
         m_showDigits = false;
+        m_acceptInput = false;
     }
     update();
 }
@@ -223,7 +230,7 @@ void KkrBoard::paintEvent(QPaintEvent *)
 
 void KkrBoard::mousePressEvent(QMouseEvent *e)
 {
-    if(m_showDigits && e->button() == Qt::RightButton) {
+    if(m_acceptInput && e->button() == Qt::RightButton) {
         const QPoint pt = getCellCoord(e->x(), e->y());
         if(pt.x() >= 0 && m_pData->getCellType(pt.x(), pt.y()) == pd::CellType::CellAnswer) {
             m_inCol = pt.x(); m_inRow = pt.y();

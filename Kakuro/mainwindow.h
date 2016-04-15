@@ -85,10 +85,12 @@ private slots:
     void open();
     void updateStatus(playstatus::Status newStatus);
     void timeout();
+    void checkIt();
     void makeSureGiveup();
 
 signals:
     void newProblem(std::shared_ptr<pd::ProblemData> pData);
+    void solved();
     void giveup();
 };
 

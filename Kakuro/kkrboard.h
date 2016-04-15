@@ -29,8 +29,9 @@ class KkrBoard : public QWidget
     QFont m_fontAns;
     QFont m_fontClue;
 
-    // paint flags
+    // UI flags
     bool m_showDigits;
+    bool m_acceptInput;
 
     // data
     std::shared_ptr<pd::ProblemData> m_pData;
