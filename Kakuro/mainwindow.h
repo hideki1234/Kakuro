@@ -88,7 +88,7 @@ private slots:
     void makeSureGiveup();
 
 signals:
-    void newData(std::shared_ptr<pd::ProblemData> pData);
+    void newProblem(std::shared_ptr<pd::ProblemData> pData);
     void giveup();
 };
 

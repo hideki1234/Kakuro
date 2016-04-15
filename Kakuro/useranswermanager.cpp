@@ -11,7 +11,7 @@ UserAnswerManager::~UserAnswerManager()
 {
 }
 
-void UserAnswerManager::updateData(std::shared_ptr<problemdata::ProblemData> pNewData)
+void UserAnswerManager::updateProblem(std::shared_ptr<problemdata::ProblemData> pNewData)
 {
     const int cols = pNewData->getNumCols();
     const int rows = pNewData->getNumRows();
@@ -23,13 +23,13 @@ void UserAnswerManager::updateData(std::shared_ptr<problemdata::ProblemData> pNe
 void UserAnswerManager::updateCellAnswer(CellData cellData)
 {
     m_answer->m_answers[m_answer->getIndex(cellData.p.x(), cellData.p.y())] = cellData.answer;
-    emit updateCell(cellData.p);
+    emit newCellAnswer(cellData.p);
 }
 
 void UserAnswerManager::deleteCellAnswer(QPoint p)
 {
     m_answer->m_answers[m_answer->getIndex(p.x(), p.y())] = ANSWER_NODATA;
-    emit updateCell(p);
+    emit newCellAnswer(p);
 }
 
 }   // namespace useranswer

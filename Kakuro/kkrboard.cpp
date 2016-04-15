@@ -62,7 +62,7 @@ void KkrBoard::updateUserAnswer(useranswer::SharedAnswer pNewAns)
     // no update();
 }
 
-void KkrBoard::updateAnswer(QPoint cellPos)
+void KkrBoard::renderAnswer(QPoint cellPos)
 {
     qDebug() << "KkrBoard::updateCell:" << cellPos;
     update();
@@ -75,7 +75,7 @@ void KkrBoard::cellInput(int value)
     cd.answer = value;
 
     qDebug() << "KkrBoard::cellInputFromUser:" << cd.p << ' ' << value;
-    emit updateCellAnswer(cd);
+    emit newAnswerInput(cd);
 }
 
 /*

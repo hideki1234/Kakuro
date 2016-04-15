@@ -50,7 +50,7 @@ void PlayStatusTest::testStatusChanged()
 
     // NODATA -> READY
     std::shared_ptr<pd::ProblemData> pMockPd{pd::ProblemData::problemLoader("dummy")};
-    target.updateData(pMockPd);
+    target.updateProblem(pMockPd);
     QCOMPARE(spy.count(), 1);
 
     // READY -> INPLAY
@@ -101,7 +101,7 @@ void PlayStatusTest::testGiveupFromReady()
 
     // NODATA -> READY
     std::shared_ptr<pd::ProblemData> pMockPd{pd::ProblemData::problemLoader("dummy")};
-    target.updateData(pMockPd);
+    target.updateProblem(pMockPd);
     // QCOMPARE(spy.count(), 1);
 
     // you can't give up before start
@@ -117,7 +117,7 @@ void PlayStatusTest::testGiveupFromInplay()
 
     // NODATA -> READY
     std::shared_ptr<pd::ProblemData> pMockPd{pd::ProblemData::problemLoader("dummy")};
-    target.updateData(pMockPd);
+    target.updateProblem(pMockPd);
     // QCOMPARE(spy.count(), 1);
 
     // READY -> INPLAY
@@ -139,7 +139,7 @@ void PlayStatusTest::testGiveupFromPaused()
 
     // NODATA -> READY
     std::shared_ptr<pd::ProblemData> pMockPd{pd::ProblemData::problemLoader("dummy")};
-    target.updateData(pMockPd);
+    target.updateProblem(pMockPd);
     // QCOMPARE(spy.count(), 1);
 
     // READY -> INPLAY
@@ -171,7 +171,7 @@ void PlayStatusTest::testElapsedTime()
 
     // READY
     std::shared_ptr<pd::ProblemData> pMockPd{pd::ProblemData::problemLoader("dummy")};
-    target.updateData(pMockPd);
+    target.updateProblem(pMockPd);
     s = target.getElapsedTime();
     QThread::msleep(WAIT_MS);
     QCOMPARE(target.getElapsedTime(), s);
@@ -210,7 +210,7 @@ void PlayStatusTest::testElpasedAfterGiveup()
 
     // NODATA -> READY
     std::shared_ptr<pd::ProblemData> pMockPd{pd::ProblemData::problemLoader("dummy")};
-    target.updateData(pMockPd);
+    target.updateProblem(pMockPd);
 
     // READY -> INPLAY
     target.playPressed();

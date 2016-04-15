@@ -34,7 +34,7 @@ public:
     PlayStatus &operator=(const PlayStatus&) = delete;
 
 public slots:
-    void updateData(std::shared_ptr<problemdata::ProblemData> pNewData);
+    void updateProblem(std::shared_ptr<problemdata::ProblemData> pNewData);
     void playPressed();
     void solved();
     void giveup();

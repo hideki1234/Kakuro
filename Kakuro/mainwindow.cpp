@@ -128,9 +128,9 @@ MainWindow::MainWindow(QWidget *parent)
      * connections
      */
     // signal in loading data
-    connect(this, &MainWindow::newData, m_pKkrBoard, &KkrBoard::updateProblem);
-    connect(this, &MainWindow::newData, &m_ps, &playstatus::PlayStatus::updateData);
-    connect(this, &MainWindow::newData, &m_uam, &ua::UserAnswerManager::updateData);
+    connect(this, &MainWindow::newProblem, m_pKkrBoard, &KkrBoard::updateProblem);
+    connect(this, &MainWindow::newProblem, &m_ps, &playstatus::PlayStatus::updateProblem);
+    connect(this, &MainWindow::newProblem, &m_uam, &ua::UserAnswerManager::updateProblem);
 
     // button signals
     connect(m_pButtonPlay, &QPushButton::clicked, &m_ps, &ps::PlayStatus::playPressed);
@@ -142,8 +142,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // user answer signals
     connect(&m_uam, &ua::UserAnswerManager::newUserAnswer, m_pKkrBoard, &KkrBoard::updateUserAnswer);
-    connect(m_pKkrBoard, &KkrBoard::updateCellAnswer, &m_uam, &ua::UserAnswerManager::updateCellAnswer);
-    connect(&m_uam, &ua::UserAnswerManager::updateCell, m_pKkrBoard, &KkrBoard::updateAnswer);
+    connect(m_pKkrBoard, &KkrBoard::newAnswerInput, &m_uam, &ua::UserAnswerManager::updateCellAnswer);
+    connect(&m_uam, &ua::UserAnswerManager::newCellAnswer, m_pKkrBoard, &KkrBoard::renderAnswer);
 
     // timer
     connect(&m_secTimer, &QTimer::timeout, this, &MainWindow::timeout);
@@ -198,7 +198,7 @@ void MainWindow::open()
         return;
     }
 
-    emit newData(pData);
+    emit newProblem(pData);
 }
 
 void MainWindow::updateStatus(playstatus::Status newStatus)

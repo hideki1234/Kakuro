@@ -66,13 +66,13 @@ public:
     int getCurrentCellValue() const {return m_inValue;}
 
 signals:
-    void updateCellAnswer(ua::CellData cellData);
+    void newAnswerInput(ua::CellData cellData);
 
 public slots:
     void updateProblem(std::shared_ptr<pd::ProblemData> pNewData);
     void updateStatus(playstatus::Status newStatus);
     void updateUserAnswer(ua::SharedAnswer pNewAns);
-    void updateAnswer(QPoint cellPos);
+    void renderAnswer(QPoint cellPos);
 
     // from cell input
     void cellInput(int value);

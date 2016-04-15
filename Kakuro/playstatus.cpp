@@ -18,7 +18,7 @@ qint64 PlayStatus::getElapsedTime() const {
 /*
  * slots
  */
-void PlayStatus::updateData(std::shared_ptr<problemdata::ProblemData> /*pNewData*/)
+void PlayStatus::updateProblem(std::shared_ptr<problemdata::ProblemData> /*pNewData*/)
 {
     m_status = Status::READY;
     m_timeOffset = 0;

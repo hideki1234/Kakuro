@@ -32,10 +32,10 @@ public:
 
 signals:
     void newUserAnswer(SharedAnswer pNewAns);
-    void updateCell(QPoint cellPos);
+    void newCellAnswer(QPoint cellPos);
 
 public slots:
-    void updateData(std::shared_ptr<pd::ProblemData> pNewData);
+    void updateProblem(std::shared_ptr<pd::ProblemData> pNewData);
     void updateCellAnswer(CellData cellData);
     void deleteCellAnswer(QPoint p);
 };

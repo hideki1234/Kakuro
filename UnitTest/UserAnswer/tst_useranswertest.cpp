@@ -34,7 +34,7 @@ void UserAnswerTest::testCaseInitialize()
     const int numRows = 10;
     const QString sSize = QString::asprintf("%d,%d", numCols, numRows);
     std::shared_ptr<pd::ProblemData> pProblem{pd::ProblemData::problemLoader(sSize)};
-    target.updateData(pProblem);
+    target.updateProblem(pProblem);
     QCOMPARE(spy.count(), 1);
 
     useranswer::SharedAnswer pAns{qvariant_cast<useranswer::SharedAnswer>(spy.at(0).at(0))};
@@ -47,13 +47,13 @@ void UserAnswerTest::testCaseCellUpdate()
     useranswer::UserAnswerManager target;
     qRegisterMetaType<useranswer::SharedAnswer>("SharedAnswer");
     QSignalSpy spy0(&target, &useranswer::UserAnswerManager::newUserAnswer);
-    QSignalSpy spy(&target, &useranswer::UserAnswerManager::updateCell);
+    QSignalSpy spy(&target, &useranswer::UserAnswerManager::newCellAnswer);
 
     const int numCols = 4;
     const int numRows = 10;
     const QString sSize = QString::asprintf("%d,%d", numCols, numRows);
     std::shared_ptr<pd::ProblemData> pProblem{pd::ProblemData::problemLoader(sSize)};
-    target.updateData(pProblem);
+    target.updateProblem(pProblem);
     useranswer::SharedAnswer pAns{qvariant_cast<useranswer::SharedAnswer>(spy0.at(0).at(0))};
 
     QCOMPARE(pAns->getAnswer(1,1), useranswer::ANSWER_NODATA);
