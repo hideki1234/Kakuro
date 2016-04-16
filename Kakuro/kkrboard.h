@@ -47,6 +47,9 @@ class KkrBoard : public QWidget
     // input cursor
     int m_curCol;
     int m_curRow;
+    // scroll cell position
+    int m_scrCol;
+    int m_scrRow;
 
     // for auto scroll
     QScrollArea *m_pScrollArea;
@@ -69,6 +72,7 @@ class KkrBoard : public QWidget
      * paint sub methods
      */
     void drawCell(QPainter &p, int col, int row) const;
+    void showCell(int col, int row);
     void resetCursor(int newCol, int newRow);
 
     /*

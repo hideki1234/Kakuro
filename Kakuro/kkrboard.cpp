@@ -212,6 +212,17 @@ void KkrBoard::drawCell(QPainter &p, int col, int row) const
     }
 }
 
+void KkrBoard::showCell(int col, int row)
+{
+    if(m_pScrollArea != nullptr) {
+        m_scrCol = col; m_scrRow = row;
+        const QRect cellRect = getCellRect(col, row);
+        // the top/right clue cell must be also in the visible area
+        m_pScrollArea->ensureVisible(cellRect.x(), cellRect.y(),
+                                     FRAME_THICK+CELL_WIDTH, FRAME_THICK+CELL_WIDTH);
+    }
+}
+
 void KkrBoard::resetCursor(int newCol, int newRow)
 {
     Q_ASSERT(newCol >= 1 && newCol < m_pData->getNumCols());
@@ -219,14 +230,8 @@ void KkrBoard::resetCursor(int newCol, int newRow)
     Q_ASSERT(m_pData->getCellType(newCol, newRow) == pd::CellType::CellAnswer);
 
     // make sure the cursor comes in the visible area
-    if(m_pScrollArea != nullptr) {
-        const QRect cellRect = getCellRect(newCol, newRow);
-        // the top/right clue cell must be also in the visible area
-        m_pScrollArea->ensureVisible(cellRect.x(), cellRect.y(),
-                                     FRAME_THICK+CELL_WIDTH, FRAME_THICK+CELL_WIDTH);
-        m_pScrollArea->ensureVisible(cellRect.right(),
-                                     cellRect.bottom(), FRAME_THICK, FRAME_THICK);
-    }
+    showCell(newCol, newRow);
+
     m_curCol = newCol; m_curRow = newRow;
     update(); // can be optimized
 }
@@ -285,59 +290,123 @@ void KkrBoard::keyCursor(QKeyEvent *e)
     int newCol;
     int newRow;
 
-    if(e->modifiers() != Qt::NoModifier)
-        return;
+    const auto mod = e->modifiers();
 
-    switch(e->key()) {
-    case Qt::Key_Up: case Qt::Key_K:
-        newCol = m_curCol;
-        newRow = m_curRow - 1;
-        while(newRow >= 1 && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
-            --newRow;
-        if(newRow < 1)
+    if(mod == Qt::ControlModifier) {
+        switch(e->key()) {
+        case Qt::Key_Up:
+            // find the first answer cell from top
+            newCol = m_curCol;
+            for(newRow = 1;
+                m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer;
+                ++newRow)
+                ;
+            if(newRow == m_curRow)
+                return;
+            showCell(newCol, 1);
+            break;
+
+        case Qt::Key_Down:
+            newCol = m_curCol;
+            for(newRow = m_pData->getNumRows()-1;
+                m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer;
+                --newRow)
+                ;
+            if(newRow == m_curRow)
+                return;
+            showCell(newCol, m_pData->getNumRows()-1);
+            break;
+
+        case Qt::Key_Left:
+            newRow = m_curRow;
+            for(newCol = 1;
+                m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer;
+                ++newCol)
+                ;
+            if(newCol == m_curCol)
+                return;
+            showCell(1, newRow);
+            break;
+
+        case Qt::Key_Right:
+            newRow = m_curRow;
+            for(newCol = m_pData->getNumCols()-1;
+                m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer;
+                --newCol)
+                ;
+            if(newCol == m_curCol)
+                return;
+            showCell(m_pData->getNumCols()-1, newRow);
+            break;
+
+        default:
             return;
-        break;
+        }
 
-    case Qt::Key_Down: case Qt::Key_J:
-    {
-        const int numRow = m_pData->getNumRows();
-        newCol = m_curCol;
-        newRow = m_curRow + 1;
-        while(newRow < numRow
-              && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
-            ++newRow;
-        if(newRow >= numRow)
+    } else if(mod == Qt::NoModifier) {
+        switch(e->key()) {
+        case Qt::Key_Up: case Qt::Key_K:
+            newCol = m_curCol;
+            newRow = m_curRow - 1;
+            // find the next answer cell above; skip clue cells
+            while(newRow >= 1 && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
+                --newRow;
+            if(newRow < 1) {
+                // No more answer cell above - we don't want to move the cursor
+                // but want to expose a clue cell above
+                if(m_scrRow > 1)
+                    showCell(m_curCol, m_scrRow-1);
+                return;
+            }
+            break;
+
+        case Qt::Key_Down: case Qt::Key_J:
+        {
+            const int numRow = m_pData->getNumRows();
+            newCol = m_curCol;
+            newRow = m_curRow + 1;
+            while(newRow < numRow
+                  && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
+                ++newRow;
+            if(newRow >= numRow) {
+                if(m_scrRow < numRow - 1)
+                    showCell(m_curCol, m_scrRow+1);
+                return;
+            }
+        }
+            break;
+
+        case Qt::Key_Left: case Qt::Key_H:
+            newCol = m_curCol - 1;
+            newRow = m_curRow;
+            while(newCol >= 1 && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
+                --newCol;
+            if(newCol < 1) {
+                if(m_scrCol > 1)
+                    showCell(m_scrCol-1, m_curRow);
+                return;
+            }
+            break;
+
+        case Qt::Key_Right: case Qt::Key_L:
+        {
+            const int numCol = m_pData->getNumCols();
+            newCol = m_curCol + 1;
+            newRow = m_curRow;
+            while(newCol < numCol
+                  && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
+                ++newCol;
+            if(newCol >= numCol) {
+                if(m_scrCol < numCol-1)
+                    showCell(m_scrCol+1, m_curRow);
+                return;
+            }
+        }
+            break;
+
+        default:
             return;
-    }
-        break;
-
-    case Qt::Key_Left: case Qt::Key_H:
-        newCol = m_curCol - 1;
-        newRow = m_curRow;
-        while(newCol >= 1 && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
-            --newCol;
-        if(newCol < 1)
-            return;
-        break;
-
-    case Qt::Key_Right: case Qt::Key_L:
-    {
-        const int numCol = m_pData->getNumCols();
-        newCol = m_curCol + 1;
-        newRow = m_curRow;
-        while(newCol < numCol
-              && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
-            ++newCol;
-        if(newCol >= numCol)
-            return;
-    }
-        break;
-
-    default:
-        // this method only accespts cursor keys and vi move keys.
-        // mustn't reach here.
-        Q_ASSERT(false);
-        return;
+        }
     }
 
     resetCursor(newCol, newRow);
