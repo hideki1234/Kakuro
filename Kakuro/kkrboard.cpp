@@ -11,6 +11,7 @@ KkrBoard::KkrBoard(QWidget *parent)
     , m_fontClue(FONT_CLUE)
     , m_showDigits(false)
     , m_acceptInput(false)
+    , m_pScrollArea(nullptr)
 {
     m_pCellInput = cellInputFactory(this);
     m_fontAns.setPixelSize(CELL_WIDTH);
@@ -92,6 +93,11 @@ void KkrBoard::cellInput(int value)
 /*
  * regular methods
  */
+void KkrBoard::setScrollArea(QScrollArea *pScrollArea)
+{
+    m_pScrollArea = pScrollArea;
+}
+
 QRect KkrBoard::getCellRect(int col, int row) const
 {
     const int x = MARGIN + FRAME_THICK + col * (CELL_WIDTH + BORDER_THICK);
@@ -212,6 +218,15 @@ void KkrBoard::resetCursor(int newCol, int newRow)
     Q_ASSERT(newRow >= 1 && newRow < m_pData->getNumRows());
     Q_ASSERT(m_pData->getCellType(newCol, newRow) == pd::CellType::CellAnswer);
 
+    // make sure the cursor comes in the visible area
+    if(m_pScrollArea != nullptr) {
+        const QRect cellRect = getCellRect(newCol, newRow);
+        // the top/right clue cell must be also in the visible area
+        m_pScrollArea->ensureVisible(cellRect.x(), cellRect.y(),
+                                     FRAME_THICK+CELL_WIDTH, FRAME_THICK+CELL_WIDTH);
+        m_pScrollArea->ensureVisible(cellRect.right(),
+                                     cellRect.bottom(), FRAME_THICK, FRAME_THICK);
+    }
     m_curCol = newCol; m_curRow = newRow;
     update(); // can be optimized
 }
@@ -337,6 +352,7 @@ void KkrBoard::keyData(QKeyEvent *e)
 
     switch (e->key()) {
     case Qt::Key_Space:
+    case Qt::Key_Delete:
     case Qt::Key_0:
         // delete answer
         newData.answer = ua::ANSWER_NODATA;
@@ -392,7 +408,7 @@ void KkrBoard::keyReleaseEvent(QKeyEvent *e)
         keyCursor(e);
         break;
 
-    case Qt::Key_Space: case Qt::Key_0: // delete answer
+    case Qt::Key_Space: case Qt::Key_Delete: case Qt::Key_0: // delete answer
     case Qt::Key_1: case Qt::Key_2: case Qt::Key_3:
     case Qt::Key_4: case Qt::Key_5: case Qt::Key_6:
     case Qt::Key_7: case Qt::Key_8: case Qt::Key_9:

@@ -5,6 +5,7 @@
 #include <QFont>
 #include <QPoint>
 #include <QMouseEvent>
+#include <QScrollArea>
 #include "cosmetic.h"
 #include "problemdata.h"
 #include "playstatus.h"
@@ -47,6 +48,9 @@ class KkrBoard : public QWidget
     int m_curCol;
     int m_curRow;
 
+    // for auto scroll
+    QScrollArea *m_pScrollArea;
+
     /*
      * coord conversion
      */
@@ -77,6 +81,7 @@ public:
     explicit KkrBoard(QWidget *parent = 0);
     ~KkrBoard();
 
+    void setScrollArea(QScrollArea *pScrollArea);
     int getCurrentCellValue() const {return m_inValue;}
 
 signals:

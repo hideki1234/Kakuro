@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QMenu>
 #include <QTimer>
+#include <QScrollArea>
 #include <memory>
 #include "kkrboard.h"
 #include "problemdata.h"
@@ -30,7 +31,8 @@ class MainWindow : public QMainWindow
     QPushButton *m_pButtonCheck;
 
     // main board
-    KkrBoard * m_pKkrBoard;
+    QScrollArea *m_pScrollKkr;
+    KkrBoard *m_pKkrBoard;
 
     // time indicator
     QProgressBar *m_pPBarTime;
@@ -80,6 +82,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    bool eventFilter(QObject *pWatched, QEvent *e) override;
 
 private slots:
     void open();

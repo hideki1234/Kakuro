@@ -53,15 +53,17 @@ void MainWindow::setupCentralPane()
     pBLCenter->addLayout(pBLButtons);
 
     // main board
-    QScrollArea *pScrollBoard = new QScrollArea;
+    m_pScrollKkr = new QScrollArea;
     QPalette palBack(palette());
     palBack.setColor(QPalette::Background, Qt::white);
-    pScrollBoard->setPalette(palBack);
-    pScrollBoard->setAutoFillBackground(true);
-    pScrollBoard->setMinimumWidth(BOARD_WIDTH);
-    pScrollBoard->setMinimumHeight(BOARD_HEIGHT);
-    pScrollBoard->setWidget(m_pKkrBoard);
-    pBLCenter->addWidget(pScrollBoard);
+    m_pScrollKkr->setPalette(palBack);
+    m_pScrollKkr->setAutoFillBackground(true);
+    m_pScrollKkr->setMinimumWidth(BOARD_WIDTH);
+    m_pScrollKkr->setMinimumHeight(BOARD_HEIGHT);
+    m_pScrollKkr->setWidget(m_pKkrBoard);
+    m_pScrollKkr->installEventFilter(this);
+    pBLCenter->addWidget(m_pScrollKkr);
+    m_pKkrBoard->setScrollArea(m_pScrollKkr);
 
     // time indicator
     QBoxLayout *pBLTime = new QBoxLayout{QBoxLayout::LeftToRight};
@@ -183,6 +185,21 @@ void MainWindow::setTimeIndicator(bool bNone)
         const QString sElapsed = QString::asprintf("%4d:%02d", min, sec);
         m_pLabelTime->setText(sElapsed);
     }
+}
+
+bool MainWindow::eventFilter(QObject *pWatched, QEvent *e)
+{
+    if(pWatched == m_pScrollKkr) {
+        switch(e->type()) {
+        case QEvent::KeyPress:
+        case QEvent::KeyRelease:
+            return true;
+        default:
+            break;
+        }
+    }
+
+    return false;
 }
 
 /*
