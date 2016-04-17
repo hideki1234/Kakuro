@@ -15,6 +15,16 @@ qint64 PlayStatus::getElapsedTime() const {
     return m_timeOffset;
 }
 
+void PlayStatus::done()
+{
+    if(m_status == Status::INPLAY) {
+        m_timeOffset += m_time.elapsed();
+        m_time.invalidate();
+    }
+    m_status = Status::DONE;
+    emit statusChanged(m_status);
+}
+
 /*
  * slots
  */
@@ -22,6 +32,7 @@ void PlayStatus::updateProblem(std::shared_ptr<problemdata::ProblemData> /*pNewD
 {
     m_status = Status::READY;
     m_timeOffset = 0;
+    m_solved = false;
     emit statusChanged(m_status);
 }
 
@@ -46,25 +57,15 @@ void PlayStatus::playPressed()
 
 void PlayStatus::solved()
 {
-    if(m_status == Status::INPLAY) {
-        m_timeOffset += m_time.elapsed();
-        m_time.invalidate();
-    }
-    m_status = Status::DONE;
-    emit statusChanged(m_status);
+    m_solved = true;
+    done();
 }
 
 void PlayStatus::giveup()
 {
     if(m_status != Status::INPLAY && m_status != Status::PAUSED)
         return;
-
-    if(m_status == Status::INPLAY) {
-        m_timeOffset += m_time.elapsed();
-        m_time.invalidate();
-    }
-    m_status = Status::DONE;
-    emit statusChanged(m_status);
+    done();
 }
 
 }   // namespace playstatus

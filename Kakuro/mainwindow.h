@@ -38,6 +38,9 @@ class MainWindow : public QMainWindow
     QProgressBar *m_pPBarTime;
     QLabel       *m_pLabelTime;
 
+    // message widget
+    QLabel *m_pFloatingMsg;
+
     // Menus
     QMenu *m_pMenuView;
 
@@ -79,11 +82,20 @@ class MainWindow : public QMainWindow
     static const int TIMER_INTERVAL = 500;
     void setTimeIndicator(bool bNone = false);
 
+    void showStatusMsg();
+    void showStatusMsg(const QString &statusMsg);
+    void placeStatusMsg();
+
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    // to disable scrollarea's key events
     bool eventFilter(QObject *pWatched, QEvent *e) override;
+
+protected:
+    void closeEvent(QCloseEvent *e) override;
+    void resizeEvent(QResizeEvent *e) override;
 
 private slots:
     void open();

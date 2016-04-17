@@ -23,11 +23,16 @@ class PlayStatus : public QObject
     Status m_status;
     QElapsedTimer m_time;
     qint64 m_timeOffset;
+    bool m_solved;
+
+    void done();
 
 public:
     PlayStatus();
 
     qint64 getElapsedTime() const;
+    bool isSolved() const {return m_solved;}
+    Status status() const {return m_status;}
 
     // delete unnecessary methods
     PlayStatus(const PlayStatus&) = delete;

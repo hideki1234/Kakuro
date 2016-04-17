@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include <QFont>
+#include <QFontMetrics>
 #include <QWidget>
 #include <QBoxLayout>
 #include <QScrollArea>
@@ -31,11 +32,23 @@ void MainWindow::makeCoreWidgets()
     m_pPBarTime = new QProgressBar;
     m_pPBarTime->setAlignment(Qt::AlignHCenter);
     m_pPBarTime->reset();
-    m_pLabelTime = new QLabel{tr("----:--")};
+    m_pLabelTime = new QLabel{tr("----:--"), this};
     m_pLabelTime->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-    QFont fontFixed(tr("Courier"));
+    QFont fontFixed{tr("Courier")};
     m_pLabelTime->setFont(fontFixed);
     m_pLabelTime->setMinimumWidth(LABEL_TIME_WIDTH);
+
+    // floating message
+    QFont fontMsg;
+    fontMsg.setPointSize(36);
+    m_pFloatingMsg = new QLabel{this};
+    m_pFloatingMsg->setEnabled(false);
+    m_pFloatingMsg->setVisible(false);
+    m_pFloatingMsg->setFont(fontMsg);
+    m_pFloatingMsg->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    QPalette fontPal(palette());
+    fontPal.setColor(QPalette::Foreground, Qt::blue);
+    m_pFloatingMsg->setPalette(fontPal);
 }
 
 void MainWindow::setupCentralPane()
@@ -187,6 +200,50 @@ void MainWindow::setTimeIndicator(bool bNone)
     }
 }
 
+void MainWindow::showStatusMsg()
+{
+    setWindowTitle(tr("Kakuro"));
+    m_pFloatingMsg->setEnabled(false);
+    m_pFloatingMsg->setVisible(false);
+}
+
+void MainWindow::showStatusMsg(const QString &statusMsg)
+{
+    // set the message text
+    QString msg{tr("Kakuro - ")};
+    msg += statusMsg;
+    setWindowTitle(msg);
+    m_pFloatingMsg->setText(statusMsg);
+
+    // get the size of the message
+    QFontMetrics fm{m_pFloatingMsg->font()};
+    //const QRect ms{fm.boundingRect(msg)};
+    //m_pMessageLabel->resize(ms.width()/2,ms.height()/2);
+    const QSize ms{fm.size(Qt::TextExpandTabs, msg)};
+    m_pFloatingMsg->resize(ms);
+
+    // show the message
+    m_pFloatingMsg->raise();
+    m_pFloatingMsg->setEnabled(true);
+    m_pFloatingMsg->setVisible(true);
+
+    placeStatusMsg();
+}
+
+void MainWindow::placeStatusMsg()
+{
+    QRect scrRect{m_pScrollKkr->geometry()};
+    QSize ms{m_pFloatingMsg->size()};
+    QPoint pos{scrRect.x()+(scrRect.width()-ms.width())/2,
+                scrRect.y()+(scrRect.height()-ms.height())/2};
+    qDebug() << scrRect << ' ' << ms.width() << ',' << ms.height() << pos;
+   //QPoint pos{scrRect.x(), scrRect.y()};
+    m_pFloatingMsg->move(pos);
+ }
+
+/*
+ * QWidget overrides
+ */
 bool MainWindow::eventFilter(QObject *pWatched, QEvent *e)
 {
     if(pWatched == m_pScrollKkr) {
@@ -202,11 +259,47 @@ bool MainWindow::eventFilter(QObject *pWatched, QEvent *e)
     return false;
 }
 
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    const auto st = m_ps.status();
+    bool accept = true;
+
+    if(st == ps::Status::INPLAY || st == ps::Status::PAUSED) {
+        accept = (
+            QMessageBox::Yes
+                    == QMessageBox::question(this,
+                                             tr("Kakuro"),
+                                             tr("Play in progress. Really want to quit?"))
+        );
+    }
+
+    if(accept)
+        e->accept();
+    else
+        e->ignore();
+}
+
+void MainWindow::resizeEvent(QResizeEvent *e)
+{
+    if(m_pFloatingMsg->isEnabled())
+        placeStatusMsg();
+}
+
 /*
  * slots
  */
 void MainWindow::open()
 {
+    const auto st = m_ps.status();
+    if(st == ps::Status::INPLAY || st == ps::Status::PAUSED) {
+        const auto reply
+                = QMessageBox::question(this,
+                                        tr("Kakuro"),
+                                        tr("Play in progress. Really want to open a new one?"));
+        if(reply != QMessageBox::Yes)
+            return;
+    }
+
     QString filename = QFileDialog::getOpenFileName(this,
                                                     tr("Open Kakuro Data"),
                                                     QString(),
@@ -247,6 +340,7 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         setTimeIndicator(true);
         break;
     case ps::Status::READY:
+        showStatusMsg();
         m_pButtonPlay->setText(sStartB);
         m_pButtonPlay->setEnabled(true);
         m_pButtonCheck->setEnabled(false);
@@ -259,6 +353,7 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         setTimeIndicator(true);
         break;
     case ps::Status::INPLAY:
+        showStatusMsg();
         m_pButtonPlay->setText(sPauseB);
         m_pButtonCheck->setEnabled(true);
         m_pActionPlay->setText(sPauseM);
@@ -270,6 +365,7 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         m_pKkrBoard->setFocus();
         break;
     case ps::Status::PAUSED:
+        showStatusMsg(tr("Paused"));
         m_pButtonPlay->setText(sResumeB);
         m_pButtonCheck->setEnabled(false);
         m_pActionPlay->setText(sResumeM);
@@ -278,6 +374,10 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         m_secTimer.stop();
         break;
     case ps::Status::DONE:
+        if(m_ps.isSolved())
+            showStatusMsg(tr("Solved"));
+        else
+            showStatusMsg(tr("Given Up"));
         m_pButtonPlay->setText(sStartB);
         m_pButtonPlay->setEnabled(false);
         m_pButtonCheck->setEnabled(false);
