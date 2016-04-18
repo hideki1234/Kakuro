@@ -37,20 +37,58 @@ void UserAnswerManager::updateProblem(std::shared_ptr<problemdata::ProblemData> 
     const int rows = pNewData->getNumRows();
     m_pProblem = pNewData;
     m_pAnswer.reset(new UserAnswer(cols, rows));
+    while(!m_undoStack.empty())
+        m_undoStack.pop();
 
     emit newUserAnswer(m_pAnswer);
+    emit undoable(false);
 }
 
 void UserAnswerManager::updateCellAnswer(CellData cellData)
 {
-    m_pAnswer->m_answers[m_pAnswer->getIndex(cellData.p.x(), cellData.p.y())] = cellData.answer;
-    emit newCellAnswer(cellData.p);
+    auto &cell = m_pAnswer->m_answers[m_pAnswer->getIndex(cellData.p.x(), cellData.p.y())];
+    if(cell != cellData.answer) {
+        const bool undoableChanged = m_undoStack.empty();
+
+        // undo stack
+        CellData undoData;
+        undoData.p = cellData.p;
+        if(cellData.answer == ANSWER_NODATA)
+            undoData.answer = cell;
+        else
+            undoData.answer = ANSWER_NODATA;
+        m_undoStack.push(undoData);
+
+        // update answer
+        cell = cellData.answer;
+
+        // notify updates
+        emit newCellAnswer(cellData.p);
+        if(undoableChanged)
+            emit undoable(true);
+    }
 }
 
 void UserAnswerManager::deleteCellAnswer(QPoint p)
 {
-    m_pAnswer->m_answers[m_pAnswer->getIndex(p.x(), p.y())] = ANSWER_NODATA;
-    emit newCellAnswer(p);
+    CellData cellData;
+    cellData.p = p; cellData.answer = ANSWER_NODATA;
+    updateCellAnswer(cellData);
+}
+
+void UserAnswerManager::undo()
+{
+    if(m_undoStack.empty())
+        return;
+
+    auto &undoData = m_undoStack.top();
+    auto &cell = m_pAnswer->m_answers[m_pAnswer->getIndex(undoData.p.x(), undoData.p.y())];
+    cell = undoData.answer;
+    m_undoStack.pop();
+
+    emit newCellAnswer(undoData.p);
+    if(m_undoStack.empty())
+        undoable(false);
 }
 
 }   // namespace useranswer

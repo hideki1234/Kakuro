@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QPoint>
 #include <memory>
+#include <stack>
 #include "useranswer.h"
 #include "problemdata.h"
 
@@ -23,6 +24,7 @@ class UserAnswerManager : public QObject
     Q_OBJECT
     std::shared_ptr<problemdata::ProblemData> m_pProblem;
     std::shared_ptr<UserAnswer> m_pAnswer;
+    std::stack<CellData> m_undoStack;
 
 public:
     UserAnswerManager();

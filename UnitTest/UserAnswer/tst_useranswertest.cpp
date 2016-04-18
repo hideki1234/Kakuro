@@ -190,29 +190,30 @@ void UserAnswerTest::testCaseSigUndoable()
 
     // undo with no data - nothing must happen
     target.undo();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.count(), 1);
 
     // add first data
     useranswer::CellData cellData;
     cellData.p.setX(1); cellData.p.setY(1); cellData.answer = 2;
     target.updateCellAnswer(cellData);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.count(), 2);
 
     // second data - no undoable signal
     cellData.p.setX(2); cellData.p.setY(2); cellData.answer = 2;
     target.updateCellAnswer(cellData);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.count(), 2);
 
     // undo - no signal
     target.undo();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.count(), 2);
 
     // undo - signal
     target.undo();
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.count(), 3);
 
-    QVERIFY(spy.at(0).at(0).toBool() == true);
-    QVERIFY(spy.at(1).at(0).toBool() == false);
+    QVERIFY(spy.at(0).at(0).toBool() == false);
+    QVERIFY(spy.at(1).at(0).toBool() == true);
+    QVERIFY(spy.at(2).at(0).toBool() == false);
 }
 
 void UserAnswerTest::testCaseUndoneContent()
