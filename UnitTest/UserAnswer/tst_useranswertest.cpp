@@ -21,6 +21,9 @@ private Q_SLOTS:
     void testCaseSolved();
     void testCaseNotSolvedWithAnEmptyCell();
     void testCaseNotSolvedWithAWrongAnswer();
+    void testCaseSigUndoable();
+    void testCaseUndoneContent();
+    void testCaseUndoCellSignal();
 };
 
 UserAnswerTest::UserAnswerTest()
@@ -172,6 +175,108 @@ void UserAnswerTest::testCaseNotSolvedWithAWrongAnswer()
     target.updateCellAnswer(cellData);
 
     QCOMPARE(target.isSolved(), false);
+}
+
+void UserAnswerTest::testCaseSigUndoable()
+{
+    useranswer::UserAnswerManager target;
+    QSignalSpy spy(&target, &useranswer::UserAnswerManager::undoable);
+
+    const int numCols = 4;
+    const int numRows = 10;
+    const QString sSize = QString::asprintf("%d,%d", numCols, numRows);
+    std::shared_ptr<pd::ProblemData> pProblem{pd::ProblemData::problemLoader(sSize)};
+    target.updateProblem(pProblem);
+
+    // undo with no data - nothing must happen
+    target.undo();
+    QCOMPARE(spy.count(), 0);
+
+    // add first data
+    useranswer::CellData cellData;
+    cellData.p.setX(1); cellData.p.setY(1); cellData.answer = 2;
+    target.updateCellAnswer(cellData);
+    QCOMPARE(spy.count(), 1);
+
+    // second data - no undoable signal
+    cellData.p.setX(2); cellData.p.setY(2); cellData.answer = 2;
+    target.updateCellAnswer(cellData);
+    QCOMPARE(spy.count(), 1);
+
+    // undo - no signal
+    target.undo();
+    QCOMPARE(spy.count(), 1);
+
+    // undo - signal
+    target.undo();
+    QCOMPARE(spy.count(), 2);
+
+    QVERIFY(spy.at(0).at(0).toBool() == true);
+    QVERIFY(spy.at(1).at(0).toBool() == false);
+}
+
+void UserAnswerTest::testCaseUndoneContent()
+{
+    useranswer::UserAnswerManager target;
+    qRegisterMetaType<useranswer::SharedAnswer>("SharedAnswer");
+    QSignalSpy spy(&target, &useranswer::UserAnswerManager::newUserAnswer);
+
+    const int numCols = 4;
+    const int numRows = 10;
+    const QString sSize = QString::asprintf("%d,%d", numCols, numRows);
+    std::shared_ptr<pd::ProblemData> pProblem{pd::ProblemData::problemLoader(sSize)};
+    target.updateProblem(pProblem);
+    useranswer::SharedAnswer pAns{qvariant_cast<useranswer::SharedAnswer>(spy.at(0).at(0))};
+
+    useranswer::CellData cellData;
+    int col, row, ans;
+
+    col = 1; row = 1; ans = 2;
+    cellData.p.setX(col); cellData.p.setY(row); cellData.answer = ans;
+    target.updateCellAnswer(cellData);
+    QCOMPARE(pAns->getAnswer(col,row), ans);
+    target.undo();
+    QCOMPARE(pAns->getAnswer(col,row), useranswer::ANSWER_NODATA);
+
+    col = 2; row = 3; ans = 9;
+    cellData.p.setX(col); cellData.p.setY(row); cellData.answer = ans;
+    target.updateCellAnswer(cellData);
+    target.deleteCellAnswer(cellData.p);
+    QCOMPARE(pAns->getAnswer(col,row), useranswer::ANSWER_NODATA);
+    target.undo();
+    QCOMPARE(pAns->getAnswer(col,row), ans);
+ }
+
+void UserAnswerTest::testCaseUndoCellSignal()
+{
+    useranswer::UserAnswerManager target;
+    QSignalSpy spy(&target, &useranswer::UserAnswerManager::newCellAnswer);
+
+    const int numCols = 4;
+    const int numRows = 10;
+    const QString sSize = QString::asprintf("%d,%d", numCols, numRows);
+    std::shared_ptr<pd::ProblemData> pProblem{pd::ProblemData::problemLoader(sSize)};
+    target.updateProblem(pProblem);
+
+    useranswer::CellData cellData;
+    int col, row, ans;
+
+    col = 1; row = 1; ans = 2;
+    cellData.p.setX(col); cellData.p.setY(row); cellData.answer = ans;
+    target.updateCellAnswer(cellData);
+    target.undo();
+    QCOMPARE(spy.count(), 2);
+    QPoint pos{qvariant_cast<QPoint>(spy.at(1).at(0))};
+    QCOMPARE(pos, QPoint(col, row));
+
+    col = 2; row = 3; ans = 9;
+    cellData.p.setX(col); cellData.p.setY(row); cellData.answer = ans;
+    target.updateCellAnswer(cellData);
+    target.deleteCellAnswer(cellData.p);
+    target.undo();
+    QCOMPARE(spy.count(), 5);
+    pos = qvariant_cast<QPoint>(spy.at(4).at(0));
+    QCOMPARE(pos, QPoint(col, row));
 }
 
 QTEST_APPLESS_MAIN(UserAnswerTest)

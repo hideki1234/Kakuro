@@ -35,12 +35,17 @@ public:
 
 signals:
     void newUserAnswer(SharedAnswer pNewAns);
+        // the whole answers is renewed (due to a new problem is loaded)
     void newCellAnswer(QPoint cellPos);
+        // An answer in a cell is updated
+    void undoable(bool bUndoable);
+        // undoable status changed
 
 public slots:
     void updateProblem(std::shared_ptr<pd::ProblemData> pNewData);
     void updateCellAnswer(CellData cellData);
     void deleteCellAnswer(QPoint p);
+    void undo();
 };
 
 }   // namespace useranswer
