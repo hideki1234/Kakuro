@@ -53,10 +53,7 @@ void UserAnswerManager::updateCellAnswer(CellData cellData)
         // undo stack
         CellData undoData;
         undoData.p = cellData.p;
-        if(cellData.answer == ANSWER_NODATA)
-            undoData.answer = cell;
-        else
-            undoData.answer = ANSWER_NODATA;
+        undoData.answer = cell;
         m_undoStack.push(undoData);
 
         // update answer

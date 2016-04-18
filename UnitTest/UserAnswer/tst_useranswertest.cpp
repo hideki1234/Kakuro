@@ -246,6 +246,17 @@ void UserAnswerTest::testCaseUndoneContent()
     QCOMPARE(pAns->getAnswer(col,row), useranswer::ANSWER_NODATA);
     target.undo();
     QCOMPARE(pAns->getAnswer(col,row), ans);
+
+    col = 3; row = 5; ans = 9;
+    cellData.p.setX(col); cellData.p.setY(row); cellData.answer = ans;
+    target.updateCellAnswer(cellData);
+    cellData.answer = 8;
+    target.updateCellAnswer(cellData);
+    QCOMPARE(pAns->getAnswer(col,row), 8);
+    target.undo();
+    QCOMPARE(pAns->getAnswer(col,row), ans);
+    target.undo();
+    QCOMPARE(pAns->getAnswer(col,row), useranswer::ANSWER_NODATA);
  }
 
 void UserAnswerTest::testCaseUndoCellSignal()
@@ -277,6 +288,17 @@ void UserAnswerTest::testCaseUndoCellSignal()
     target.undo();
     QCOMPARE(spy.count(), 5);
     pos = qvariant_cast<QPoint>(spy.at(4).at(0));
+    QCOMPARE(pos, QPoint(col, row));
+
+    col = 3; row = 5; ans = 9;
+    cellData.p.setX(col); cellData.p.setY(row); cellData.answer = ans;
+    target.updateCellAnswer(cellData);
+    cellData.answer = 8;
+    target.updateCellAnswer(cellData);
+    target.undo();
+    target.undo();
+    QCOMPARE(spy.count(), 9);
+    pos = qvariant_cast<QPoint>(spy.at(8).at(0));
     QCOMPARE(pos, QPoint(col, row));
 }
 
