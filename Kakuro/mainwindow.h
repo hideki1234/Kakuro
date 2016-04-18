@@ -103,6 +103,7 @@ private slots:
     void timeout();
     void checkIt();
     void makeSureGiveup();
+    void undoableChange(bool undoable);
 
 signals:
     void newProblem(std::shared_ptr<pd::ProblemData> pData);

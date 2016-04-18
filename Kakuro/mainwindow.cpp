@@ -102,7 +102,7 @@ void MainWindow::setupMainMenu()
     QMenu * pMenuPlay = new QMenu{tr("&Play")};
     m_pActionPlay = pMenuPlay->addAction(tr("&Start"), &m_ps, &ps::PlayStatus::playPressed);
     m_pActionPlay->setShortcutContext(Qt::ApplicationShortcut);
-    m_pActionUndo = pMenuPlay->addAction(tr("&Undo"));
+    m_pActionUndo = pMenuPlay->addAction(tr("&Undo"), &m_uam, &ua::UserAnswerManager::undo);
     m_pActionUndo->setShortcutContext(Qt::ApplicationShortcut);
     m_pActionUndo->setShortcut(Qt::Key_U | Qt::ControlModifier);
     m_pActionCheck = pMenuPlay->addAction(tr("Chec&k"), this, &MainWindow::checkIt);
@@ -155,6 +155,7 @@ MainWindow::MainWindow(QWidget *parent)
     // button signals
     connect(m_pButtonPlay, &QPushButton::clicked, &m_ps, &ps::PlayStatus::playPressed);
     connect(m_pButtonCheck, &QPushButton::clicked, this, &MainWindow::checkIt);
+    connect(m_pButtonUndo, &QPushButton::clicked, &m_uam, &ua::UserAnswerManager::undo);
 
     // play status change
     connect(&m_ps, &playstatus::PlayStatus::statusChanged, m_pKkrBoard, &KkrBoard::updateStatus);
@@ -166,6 +167,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&m_uam, &ua::UserAnswerManager::newUserAnswer, m_pKkrBoard, &KkrBoard::updateUserAnswer);
     connect(m_pKkrBoard, &KkrBoard::newAnswerInput, &m_uam, &ua::UserAnswerManager::updateCellAnswer);
     connect(&m_uam, &ua::UserAnswerManager::newCellAnswer, m_pKkrBoard, &KkrBoard::renderAnswer);
+    connect(&m_uam, &ua::UserAnswerManager::undoable, this, &MainWindow::undoableChange);
 
     // timer
     connect(&m_secTimer, &QTimer::timeout, this, &MainWindow::timeout);
@@ -279,7 +281,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
         e->ignore();
 }
 
-void MainWindow::resizeEvent(QResizeEvent *e)
+void MainWindow::resizeEvent(QResizeEvent */*e*/)
 {
     if(m_pFloatingMsg->isEnabled())
         placeStatusMsg();
@@ -332,10 +334,12 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         m_pButtonPlay->setText(sStartB);
         m_pButtonPlay->setEnabled(false);
         m_pButtonCheck->setEnabled(false);
+        m_pButtonUndo->setEnabled(false);
         m_pActionPlay->setText(sStartM);
         m_pActionPlay->setEnabled(false);
         m_pActionCheck->setEnabled(false);
         m_pActionGiveup->setEnabled(false);
+        m_pActionUndo->setEnabled(false);
         m_secTimer.stop();
         setTimeIndicator(true);
         break;
@@ -344,11 +348,13 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         m_pButtonPlay->setText(sStartB);
         m_pButtonPlay->setEnabled(true);
         m_pButtonCheck->setEnabled(false);
+        m_pButtonUndo->setEnabled(false);
         m_pActionPlay->setText(sStartM);
         m_pActionPlay->setShortcut(Qt::Key_S | Qt::ControlModifier);
         m_pActionPlay->setEnabled(true);
         m_pActionCheck->setEnabled(false);
         m_pActionGiveup->setEnabled(false);
+        m_pActionUndo->setEnabled(false);
         m_secTimer.stop();
         setTimeIndicator(true);
         break;
@@ -360,6 +366,10 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         m_pActionPlay->setShortcut(Qt::Key_P | Qt::ControlModifier);
         m_pActionCheck->setEnabled(true);
         m_pActionGiveup->setEnabled(true);
+        if(m_uam.isUndoable()) {
+            m_pButtonUndo->setEnabled(true);
+            m_pActionUndo->setEnabled(true);
+        }
         setTimeIndicator();
         m_secTimer.start(TIMER_INTERVAL);
         m_pKkrBoard->setFocus();
@@ -368,9 +378,11 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         showStatusMsg(tr("Paused"));
         m_pButtonPlay->setText(sResumeB);
         m_pButtonCheck->setEnabled(false);
+        m_pButtonUndo->setEnabled(false);
         m_pActionPlay->setText(sResumeM);
         m_pActionPlay->setShortcut(Qt::Key_R | Qt::ControlModifier);
         m_pActionCheck->setEnabled(false);
+        m_pActionUndo->setEnabled(false);
         m_secTimer.stop();
         break;
     case ps::Status::DONE:
@@ -381,9 +393,11 @@ void MainWindow::updateStatus(playstatus::Status newStatus)
         m_pButtonPlay->setText(sStartB);
         m_pButtonPlay->setEnabled(false);
         m_pButtonCheck->setEnabled(false);
+        m_pButtonUndo->setEnabled(false);
         m_pActionPlay->setEnabled(false);
         m_pActionCheck->setEnabled(false);
         m_pActionGiveup->setEnabled(false);
+        m_pActionUndo->setEnabled(false);
         m_secTimer.stop();
         setTimeIndicator();
         break;
@@ -410,4 +424,10 @@ void MainWindow::makeSureGiveup()
     const auto ans = QMessageBox::question(this, tr("Kakuro"), tr("Give up? Really!?"));
     if(ans == QMessageBox::Yes)
         emit giveup();
+}
+
+void MainWindow::undoableChange(bool undoable)
+{
+    m_pActionUndo->setEnabled(undoable);
+    m_pButtonUndo->setEnabled(undoable);
 }

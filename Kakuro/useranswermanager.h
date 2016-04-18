@@ -34,6 +34,7 @@ public:
     UserAnswerManager &operator=(const UserAnswerManager&) = delete;
 
     bool isSolved() const;
+    bool isUndoable() const {return !m_undoStack.empty();}
 
 signals:
     void newUserAnswer(SharedAnswer pNewAns);
