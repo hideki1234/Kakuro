@@ -170,7 +170,8 @@ void KkrBoard::drawCell(QPainter &p, int col, int row) const
         break;
     case pd::CellType::CellClue:
     {
-        p.setBrush(Qt::SolidPattern);
+        QBrush brFG{ m_curCol==col && m_curRow==row ? Qt::cyan : Qt::black };
+        p.setBrush(brFG);
         std::array<QPoint, 3> points;
 
         // upper right triangle
@@ -346,62 +347,31 @@ void KkrBoard::keyCursor(QKeyEvent *e)
     } else if(mod == Qt::NoModifier) {
         switch(e->key()) {
         case Qt::Key_Up: case Qt::Key_K:
+            if(m_curRow <= 1)
+                return;
             newCol = m_curCol;
             newRow = m_curRow - 1;
-            // find the next answer cell above; skip clue cells
-            while(newRow >= 1 && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
-                --newRow;
-            if(newRow < 1) {
-                // No more answer cell above - we don't want to move the cursor
-                // but want to expose a clue cell above
-                if(m_scrRow > 1)
-                    showCell(m_curCol, m_scrRow-1);
-                return;
-            }
             break;
 
         case Qt::Key_Down: case Qt::Key_J:
-        {
-            const int numRow = m_pData->getNumRows();
+            if(m_curRow >= m_pData->getNumRows()-1)
+                return;
             newCol = m_curCol;
             newRow = m_curRow + 1;
-            while(newRow < numRow
-                  && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
-                ++newRow;
-            if(newRow >= numRow) {
-                if(m_scrRow < numRow - 1)
-                    showCell(m_curCol, m_scrRow+1);
-                return;
-            }
-        }
             break;
 
         case Qt::Key_Left: case Qt::Key_H:
+            if(m_curCol <= 1)
+                return;
             newCol = m_curCol - 1;
             newRow = m_curRow;
-            while(newCol >= 1 && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
-                --newCol;
-            if(newCol < 1) {
-                if(m_scrCol > 1)
-                    showCell(m_scrCol-1, m_curRow);
-                return;
-            }
             break;
 
         case Qt::Key_Right: case Qt::Key_L:
-        {
-            const int numCol = m_pData->getNumCols();
+            if(m_curCol >= m_pData->getNumCols()-1)
+                return;
             newCol = m_curCol + 1;
             newRow = m_curRow;
-            while(newCol < numCol
-                  && m_pData->getCellType(newCol, newRow) != pd::CellType::CellAnswer)
-                ++newCol;
-            if(newCol >= numCol) {
-                if(m_scrCol < numCol-1)
-                    showCell(m_scrCol+1, m_curRow);
-                return;
-            }
-        }
             break;
 
         default:
@@ -415,6 +385,8 @@ void KkrBoard::keyCursor(QKeyEvent *e)
 void KkrBoard::keyData(QKeyEvent *e)
 {
     if(e->modifiers() != Qt::NoModifier)
+        return;
+    if(m_pData->getCellType(m_curCol, m_curRow) != pd::CellType::CellAnswer)
         return;
 
     ua::CellData newData;
