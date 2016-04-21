@@ -48,9 +48,10 @@ void MetaDataTest::testCaseCreate()
     QCOMPARE(spy.count(), 0);
 
     mgr.slCreate();
+    const QString NO_AUTHOR{""};
 
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(mgr.getAuthor(), "");
+    QCOMPARE(mgr.getAuthor(), NO_AUTHOR);
     QCOMPARE(mgr.getBeginnerTime(), 0);
     QCOMPARE(mgr.getIntermediateTime(), 0);
     QCOMPARE(mgr.getAdvancedTime(), 0);
@@ -58,7 +59,7 @@ void MetaDataTest::testCaseCreate()
     QCOMPARE(mgr.isValid(), true);
 
     std::unique_ptr<MetaData> md{mgr.getMetaData()};
-    QCOMPARE(md->getAuthor(), "");
+    QCOMPARE(md->getAuthor(), NO_AUTHOR);
     QCOMPARE(md->getBeginnerTime(), 0);
     QCOMPARE(md->getIntermediateTime(), 0);
     QCOMPARE(md->getAdvancedTime(), 0);
@@ -77,7 +78,7 @@ void MetaDataTest::testCaseRead()
     const int inter = 1000;
     const int advan = 100;
     const int expert = 10;
-    MetaData md_org{au, begin, inter, advan, expert};
+    std::shared_ptr<const MetaData> md_org(new MetaData{au, begin, inter, advan, expert});
     mgr.slRead(md_org);
 
     QCOMPARE(spy.count(), 1);
@@ -130,7 +131,7 @@ void MetaDataTest::testCaseInvalid()
     QCOMPARE(mgr.isValid(), false);
 
     std::unique_ptr<MetaData> pMd{mgr.getMetaData()};
-    QCOMPARE(pMd, nullptr);
+    QVERIFY(pMd == nullptr);
  }
 
 void MetaDataTest::testCaseValid_data()

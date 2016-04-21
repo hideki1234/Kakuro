@@ -62,7 +62,7 @@ signals:
 
 public slots:
     void slCreate();
-    void slRead(const MetaData &data);
+    void slRead(std::shared_ptr<const MetaData> data);
 
 friend class MetaView;
 };
