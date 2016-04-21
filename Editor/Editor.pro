@@ -13,6 +13,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        kkreditmain.cpp
+        kkreditmain.cpp \
+    kkrworkboard.cpp \
+    metadatamanager.cpp
 
-HEADERS  += kkreditmain.h
+HEADERS  += kkreditmain.h \
+    kkrworkboard.h \
+    metadatamanager.h

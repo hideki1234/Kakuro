@@ -3,4 +3,5 @@ TEMPLATE = subdirs
 SUBDIRS += \
     ProblemLoader \
     PlayStatus \
-    UserAnswer
+    UserAnswer \
+    MetaData
