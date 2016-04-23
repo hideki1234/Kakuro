@@ -53,6 +53,15 @@ public:
 signals:
 
 public slots:
+    // from MetaDataManager
+    void slModelChanged();
+
+    // from edit controls
+    void slAuthorChanged(const QString &author);
+    void slBeginnerChanged(int);
+    void slIntermediateChanged(int);
+    void slAdvancedChanged(int);
+    void slExpertChanged(int);
 };
 
 #endif // METADATAVIEW_H

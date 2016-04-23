@@ -98,4 +98,83 @@ MetaDataView::MetaDataView(MetaDataManager *metaData, QWidget *parent)
 
     setLayout(pBLTop);
     setMinimumWidth(120);
+
+    // connect with MetaDataManager
+    connect(m_pMetaData, &MetaDataManager::sigReset, this, &MetaDataView::slModelChanged);
+
+    // connect with edit controls
+    connect(m_pEditAuthor, &QLineEdit::textEdited, this, &MetaDataView::slAuthorChanged);
+    connect(m_pEditBegMin, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            this, &MetaDataView::slBeginnerChanged);
+    connect(m_pEditBegSec, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            this, &MetaDataView::slBeginnerChanged);
+    connect(m_pEditIntMin, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            this, &MetaDataView::slIntermediateChanged);
+    connect(m_pEditIntSec, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            this, &MetaDataView::slIntermediateChanged);
+    connect(m_pEditAdvMin, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            this, &MetaDataView::slAdvancedChanged);
+    connect(m_pEditAdvSec, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            this, &MetaDataView::slAdvancedChanged);
+    connect(m_pEditExpMin, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            this, &MetaDataView::slExpertChanged);
+    connect(m_pEditExpSec, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            this, &MetaDataView::slExpertChanged);
+}
+
+/*
+ * slots
+ */
+void MetaDataView::slModelChanged()
+{
+    m_pEditAuthor->setText(m_pMetaData->getAuthor());
+
+    auto tSeconds = m_pMetaData->getBeginnerTime();
+    m_pEditBegMin->setValue(tSeconds/60);
+    m_pEditBegSec->setValue(tSeconds%60);
+
+    tSeconds = m_pMetaData->getIntermediateTime();
+    m_pEditIntMin->setValue(tSeconds/60);
+    m_pEditIntSec->setValue(tSeconds%60);
+
+    tSeconds = m_pMetaData->getAdvancedTime();
+    m_pEditAdvMin->setValue(tSeconds/60);
+    m_pEditAdvSec->setValue(tSeconds%60);
+
+    tSeconds = m_pMetaData->getExpertTime();
+    m_pEditExpMin->setValue(tSeconds/60);
+    m_pEditExpSec->setValue(tSeconds%60);
+}
+
+void MetaDataView::slAuthorChanged(const QString &author)
+{
+    m_pMetaData->setAuthor(author);
+}
+
+void MetaDataView::slBeginnerChanged(int)
+{
+    const int tSeconds = m_pEditBegMin->value()*60 + m_pEditBegSec->value();
+    if(m_pMetaData->getBeginnerTime() != tSeconds)
+        m_pMetaData->setBeginnerTime(tSeconds);
+}
+
+void MetaDataView::slIntermediateChanged(int)
+{
+    const int tSeconds = m_pEditIntMin->value()*60 + m_pEditIntSec->value();
+    if(m_pMetaData->getIntermediateTime() != tSeconds)
+        m_pMetaData->setIntermediateTime(tSeconds);
+}
+
+void MetaDataView::slAdvancedChanged(int)
+{
+    const int tSeconds = m_pEditAdvMin->value()*60 + m_pEditAdvSec->value();
+    if(m_pMetaData->getAdvancedTime() != tSeconds)
+        m_pMetaData->setAdvancedTime(tSeconds);
+}
+
+void MetaDataView::slExpertChanged(int)
+{
+    const int tSeconds = m_pEditExpMin->value()*60 + m_pEditExpSec->value();
+    if(m_pMetaData->getExpertTime() != tSeconds)
+        m_pMetaData->setExpertTime(tSeconds);
 }

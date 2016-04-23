@@ -64,7 +64,7 @@ public slots:
     void slCreate();
     void slRead(std::shared_ptr<const MetaData> data);
 
-friend class MetaView;
+friend class MetaDataView;
 };
 
 #endif // METADATAMANAGER_H

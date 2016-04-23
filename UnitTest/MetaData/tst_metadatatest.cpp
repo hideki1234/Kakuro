@@ -6,10 +6,10 @@
 /*
  * MetaView mock
  */
-class MetaView {
+class MetaDataView {
     MetaDataManager * m_p;
 public:
-    explicit MetaView(MetaDataManager *p) : m_p(p) {}
+    explicit MetaDataView(MetaDataManager *p) : m_p(p) {}
 
     void setAuthor(const QString &author) {m_p->setAuthor(author);}
     void setBeginnerTime(int t) {m_p->setBeginnerTime(t);}
@@ -114,7 +114,7 @@ void MetaDataTest::testCaseInvalid_data()
 void MetaDataTest::testCaseInvalid()
 {
     MetaDataManager mgr;
-    MetaView mv(&mgr);
+    MetaDataView mv(&mgr);
 
     QFETCH(QString, author);
     QFETCH(int, beginner);
@@ -152,7 +152,7 @@ void MetaDataTest::testCaseValid_data()
 void MetaDataTest::testCaseValid()
 {
     MetaDataManager mgr;
-    MetaView mv(&mgr);
+    MetaDataView mv(&mgr);
 
     QFETCH(QString, author);
     QFETCH(int, beginner);
