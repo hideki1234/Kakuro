@@ -16,9 +16,11 @@ SOURCES += main.cpp\
         kkreditmain.cpp \
     kkrworkboard.cpp \
     metadatamanager.cpp \
-    metadataview.cpp
+    metadataview.cpp \
+    kkrboardmanager.cpp
 
 HEADERS  += kkreditmain.h \
     kkrworkboard.h \
     metadatamanager.h \
-    metadataview.h
+    metadataview.h \
+    kkrboardmanager.h

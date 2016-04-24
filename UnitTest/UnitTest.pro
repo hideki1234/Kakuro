@@ -4,4 +4,5 @@ SUBDIRS += \
     ProblemLoader \
     PlayStatus \
     UserAnswer \
-    MetaData
+    MetaData \
+    EditorBoard

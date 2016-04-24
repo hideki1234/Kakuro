@@ -14,7 +14,7 @@ class KkrEditMain : public QMainWindow
 
     // main board
     QScrollArea *m_pScrollBoard;
-    KkrWorkBoard *m_pWorkBoard;
+    KkrBoardView *m_pWorkBoard;
 
     // meta data view
     MetaDataView *m_pMetaView;

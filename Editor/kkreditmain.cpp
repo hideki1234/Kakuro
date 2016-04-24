@@ -23,7 +23,7 @@ void KkrEditMain::setupMainMenu()
 void KkrEditMain::makeCoreWidgets()
 {
     m_pScrollBoard = new QScrollArea;
-    m_pWorkBoard = new KkrWorkBoard(m_pScrollBoard);
+    m_pWorkBoard = new KkrBoardView(m_pScrollBoard);
     QPalette palBack(palette());
     palBack.setColor(QPalette::Background, Qt::white);
     m_pScrollBoard->setPalette(palBack);

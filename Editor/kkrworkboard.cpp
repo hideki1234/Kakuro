@@ -1,6 +1,6 @@
 #include "kkrworkboard.h"
 
-KkrWorkBoard::KkrWorkBoard(QWidget *parent) : QWidget(parent)
+KkrBoardView::KkrBoardView(QWidget *parent) : QWidget(parent)
 {
 
 }
