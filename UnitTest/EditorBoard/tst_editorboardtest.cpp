@@ -52,7 +52,7 @@ void EditorBoardTest::testCaseBoardData()
     bd.setClueDown(1,1,7);
     bd.setClueRight(5,3,16);
     QCOMPARE(bd.getCellType(1,1), CellType::CellClue);
-    QCOMPARE(bd.getCellType(5,5), CellType::CellClue);
+    QCOMPARE(bd.getCellType(5,3), CellType::CellClue);
     QCOMPARE(bd.getClueRight(1,1), 36);
     QCOMPARE(bd.getClueDown(1,1), 7);
     QCOMPARE(bd.getClueRight(5,3), 16);
