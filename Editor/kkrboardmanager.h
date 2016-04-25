@@ -35,8 +35,8 @@ class BoardData {
 public:
     BoardData(int cols, int rows);
     ~BoardData();
+    BoardData(const BoardData &rhs);
 
-    BoardData(const BoardData &) = delete;
     BoardData &operator=(const BoardData&) = delete;
 
     int getNumCols() const {return m_cols;}

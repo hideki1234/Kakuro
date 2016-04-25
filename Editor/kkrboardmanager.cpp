@@ -30,6 +30,13 @@ BoardData::BoardData(int cols, int rows)
     }
 }
 
+BoardData::BoardData(const BoardData &rhs)
+    : m_cols(rhs.m_cols)
+    , m_rows(rhs.m_rows)
+    , m_data(rhs.m_data)
+{
+}
+
 BoardData::~BoardData()
 {
 }

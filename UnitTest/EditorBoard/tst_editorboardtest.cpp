@@ -11,6 +11,7 @@ public:
 
 private Q_SLOTS:
     void testCaseBoardData();
+    void testCaseBoardDataCopy();
 };
 
 EditorBoardTest::EditorBoardTest()
@@ -68,6 +69,24 @@ void EditorBoardTest::testCaseBoardData()
     bd.setAnswer(6,3,4);
     QCOMPARE(bd.getAnswer(1,1), 8);
     QCOMPARE(bd.getAnswer(6,3), 4);
+}
+
+void EditorBoardTest::testCaseBoardDataCopy()
+{
+    // set up source
+    const int cols = 10;
+    const int rows = 4;
+    BoardData bd{cols, rows};
+    bd.setCellType(1,1,CellType::CellClue);
+    bd.setClueRight(1,1,30);
+    bd.setClueDown(1,1,5);
+    bd.setAnswer(2,2,5);
+
+    BoardData bd2{bd};
+    QCOMPARE(bd2.getCellType(1,1), CellType::CellClue);
+    QCOMPARE(bd2.getClueRight(1,1), 30);
+    QCOMPARE(bd2.getClueDown(1,1), 5);
+    QCOMPARE(bd2.getAnswer(2,2), 5);
 }
 
 QTEST_APPLESS_MAIN(EditorBoardTest)
