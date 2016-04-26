@@ -54,11 +54,20 @@ public:
 
     int getAnswer(int col, int row) const;
     void setAnswer(int col, int row, int ans);
+
+friend class KkrBoardManager;
 };
 
 class KkrBoardManager : public QObject
 {
     Q_OBJECT
+
+    int m_cols;
+    int m_rows;
+    std::vector<Cell> m_data;
+
+    // col,row to index
+    int c2i(int c, int r) const {return r*m_cols + c;}
 
     void setCellType(int col, int row, CellType ct);
     void setClueRight(int col, int row, int clue);
@@ -68,8 +77,8 @@ class KkrBoardManager : public QObject
 public:
     explicit KkrBoardManager(QObject *parent = 0);
 
-    int getNumCols() const;
-    int getNumRows() const;
+    int getNumCols() const {return m_cols;}
+    int getNumRows() const {return m_rows;}
 
     CellType getCellType(int col, int row) const;
     int getClueRight(int col, int row) const;

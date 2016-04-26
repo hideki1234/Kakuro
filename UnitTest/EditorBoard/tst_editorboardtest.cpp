@@ -19,6 +19,18 @@ public:
     void setAnswer(int c, int r, int a) { m_kbm->setAnswer(c,r,a);}
 };
 
+KkrBoardView::KkrBoardView(std::shared_ptr<KkrBoardManager> kbm)
+    : m_kbm(kbm)
+{
+}
+
+KkrBoardView::~KkrBoardView()
+{
+}
+
+/*
+ * test class
+ */
 class EditorBoardTest : public QObject
 {
     Q_OBJECT
