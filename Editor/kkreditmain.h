@@ -7,6 +7,8 @@
 #include "kkrworkboard.h"
 #include "metadatamanager.h"
 #include "metadataview.h"
+#include "kkrboardmanager.h"
+#include "kkrworkboard.h"
 
 class KkrEditMain : public QMainWindow
 {
@@ -25,6 +27,7 @@ class KkrEditMain : public QMainWindow
     /*
      * models
      */
+    KkrBoardManager m_BoardData;
     MetaDataManager m_MetaData;
 
     /*
@@ -38,6 +41,16 @@ class KkrEditMain : public QMainWindow
 public:
     KkrEditMain(QWidget *parent = 0);
     ~KkrEditMain();
+
+    /*
+     * Menu actions
+     */
+    void newWorkBoard();
+    void saveWorkBoard();
+
+signals:
+    void sigNewMeta();
+    void sigNewBoard(int cols, int rows);
 };
 
 #endif // KKREDITMAIN_H

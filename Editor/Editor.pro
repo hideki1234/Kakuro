@@ -17,10 +17,12 @@ SOURCES += main.cpp\
     kkrworkboard.cpp \
     metadatamanager.cpp \
     metadataview.cpp \
-    kkrboardmanager.cpp
+    kkrboardmanager.cpp \
+    dialognew.cpp
 
 HEADERS  += kkreditmain.h \
     kkrworkboard.h \
     metadatamanager.h \
     metadataview.h \
-    kkrboardmanager.h
+    kkrboardmanager.h \
+    dialognew.h

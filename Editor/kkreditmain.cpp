@@ -3,6 +3,8 @@
 #include "metadataview.h"
 #include <QMenuBar>
 #include <QDockWidget>
+#include <QMessageBox>
+#include "dialognew.h"
 
 void KkrEditMain::setupMainMenu()
 {
@@ -10,6 +12,7 @@ void KkrEditMain::setupMainMenu()
 
     // File menu
     QMenu *pMenuFile = new QMenu{tr("&File")};
+    pMenuFile->addAction(tr("&New..."), this, &KkrEditMain::newWorkBoard);
     pMenuFile->addAction(tr("E&xit"), this, &QWidget::close);
     pMainMenu->addMenu(pMenuFile);
 
@@ -23,14 +26,14 @@ void KkrEditMain::setupMainMenu()
 void KkrEditMain::makeCoreWidgets()
 {
     m_pScrollBoard = new QScrollArea;
-    m_pWorkBoard = new KkrBoardView(m_pScrollBoard);
     QPalette palBack(palette());
     palBack.setColor(QPalette::Background, Qt::white);
     m_pScrollBoard->setPalette(palBack);
     m_pScrollBoard->setAutoFillBackground(true);
-    m_pWorkBoard->setScrollArea(m_pScrollBoard);
+    m_pWorkBoard = new KkrBoardView(&m_BoardData);
+    m_pScrollBoard->setWidget(m_pWorkBoard);
 
-    m_pMetaView = new MetaDataView(&m_MetaData);
+    m_pMetaView = new MetaDataView(&m_MetaData, this);
  }
 
 void KkrEditMain::setupCentralPane()
@@ -59,9 +62,41 @@ KkrEditMain::KkrEditMain(QWidget *parent)
     setupCentralPane();
     setupMainMenu();
     setupDocks();
+
+    // connections
+    connect(this, &KkrEditMain::sigNewMeta, &m_MetaData, &MetaDataManager::slCreate);
+    connect(this, &KkrEditMain::sigNewBoard, &m_BoardData, &KkrBoardManager::slCreate);
 }
 
 KkrEditMain::~KkrEditMain()
 {
 
+}
+
+/*
+ * Menu actions
+ */
+void KkrEditMain::newWorkBoard()
+{
+    if(m_pWorkBoard->isEdited()) {
+        const auto bSave = QMessageBox::question(this, tr("Kakuro Editor"),
+                                                 tr("Problem is updated. Save?"));
+        if(bSave == QMessageBox::Yes)
+            saveWorkBoard();
+    }
+
+    DialogNew dlgNew{this};
+    if(dlgNew.exec() == QDialog::Rejected)
+        return;
+
+    emit sigNewMeta();
+    // UI size excludes topmost clue-only row and leftmost clue-only column
+    // Internal data includes them
+    emit sigNewBoard(dlgNew.getNumCols()+1, dlgNew.getNumRows()+1);
+}
+
+void KkrEditMain::saveWorkBoard()
+{
+    // TODO
+    QMessageBox::information(this, tr("kakuro Editor"), "Not implemented yet");
 }
