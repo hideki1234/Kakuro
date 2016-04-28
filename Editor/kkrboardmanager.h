@@ -10,9 +10,9 @@ enum class CellType {
     CellClue
 };
 
-const static int CLOSED_CLUE = 0;
-const static int NO_CLUE = 0;
-const static int NO_ANSWER = 0;
+const static int CLOSED_CLUE = -1;
+const static int EMPTY_CLUE = 0;
+const static int EMPTY_ANSWER = 0;
 
 struct Cell {
     CellType ctype;

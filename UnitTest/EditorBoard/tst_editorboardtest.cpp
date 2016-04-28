@@ -74,14 +74,14 @@ void EditorBoardTest::testCaseBoardData()
     QCOMPARE(bd.getCellType(cols/2, rows/2), CellType::CellAnswer);
 
     // default cell clue
-    QCOMPARE(bd.getClueDown(1,0), NO_CLUE);
-    QCOMPARE(bd.getClueRight(1,0), NO_CLUE);
-    QCOMPARE(bd.getClueDown(0,2), NO_CLUE);
-    QCOMPARE(bd.getClueRight(0,2), NO_CLUE);
+    QCOMPARE(bd.getClueDown(1,0), EMPTY_CLUE);
+    QCOMPARE(bd.getClueRight(1,0), EMPTY_CLUE);
+    QCOMPARE(bd.getClueDown(0,2), EMPTY_CLUE);
+    QCOMPARE(bd.getClueRight(0,2), EMPTY_CLUE);
 
     // default cell value
-    QCOMPARE(bd.getAnswer(1,1), NO_ANSWER);
-    QCOMPARE(bd.getAnswer(5,3), NO_ANSWER);
+    QCOMPARE(bd.getAnswer(1,1), EMPTY_ANSWER);
+    QCOMPARE(bd.getAnswer(5,3), EMPTY_ANSWER);
 
     // set cell type
     bd.setCellType(1,1,CellType::CellClue);
@@ -94,12 +94,12 @@ void EditorBoardTest::testCaseBoardData()
     QCOMPARE(bd.getClueRight(1,1), 36);
     QCOMPARE(bd.getClueDown(1,1), 7);
     QCOMPARE(bd.getClueRight(5,3), 16);
-    QCOMPARE(bd.getClueDown(5,3), NO_CLUE);
+    QCOMPARE(bd.getClueDown(5,3), EMPTY_CLUE);
 
     // change cell type back to answer
     bd.setCellType(1,1,CellType::CellAnswer);
     QCOMPARE(bd.getCellType(1,1), CellType::CellAnswer);
-    QCOMPARE(bd.getAnswer(1,1), NO_ANSWER);
+    QCOMPARE(bd.getAnswer(1,1), EMPTY_ANSWER);
 
     // set answer
     bd.setAnswer(1,1,8);
@@ -150,14 +150,16 @@ void EditorBoardTest::testCaseBoardDataMgrNew()
     QCOMPARE(kbm.getCellType(cols/2, rows/2), CellType::CellAnswer);
 
     // default cell clue
-    QCOMPARE(kbm.getClueDown(1,0), NO_CLUE);
-    QCOMPARE(kbm.getClueRight(1,0), NO_CLUE);
-    QCOMPARE(kbm.getClueDown(2,0), NO_CLUE);
-    QCOMPARE(kbm.getClueRight(2,0), NO_CLUE);
+    QCOMPARE(kbm.getClueDown(0,0), CLOSED_CLUE);
+    QCOMPARE(kbm.getClueRight(0,0), CLOSED_CLUE);
+    QCOMPARE(kbm.getClueDown(1,0), EMPTY_CLUE);
+    QCOMPARE(kbm.getClueRight(1,0), CLOSED_CLUE);
+    QCOMPARE(kbm.getClueDown(0,2), CLOSED_CLUE);
+    QCOMPARE(kbm.getClueRight(0,2), EMPTY_CLUE);
 
     // default cell value
-    QCOMPARE(kbm.getAnswer(1,1), NO_ANSWER);
-    QCOMPARE(kbm.getAnswer(3,5), NO_ANSWER);
+    QCOMPARE(kbm.getAnswer(1,1), EMPTY_ANSWER);
+    QCOMPARE(kbm.getAnswer(3,5), EMPTY_ANSWER);
 
     // reset
     constexpr int cols2 = 6;
@@ -249,15 +251,19 @@ void EditorBoardTest::testCaseBoardDataMgrSet()
     kbv.setClueRight(5,3,16);
     QCOMPARE(pKbm->getCellType(1,1), CellType::CellClue);
     QCOMPARE(pKbm->getCellType(5,3), CellType::CellClue);
+    QCOMPARE(pKbm->getClueDown(1,0), CLOSED_CLUE);
+    QCOMPARE(pKbm->getClueRight(0,1), CLOSED_CLUE);
     QCOMPARE(pKbm->getClueRight(1,1), 36);
     QCOMPARE(pKbm->getClueDown(1,1), 7);
     QCOMPARE(pKbm->getClueRight(5,3), 16);
-    QCOMPARE(pKbm->getClueDown(5,3), NO_CLUE);
+    QCOMPARE(pKbm->getClueDown(5,3), CLOSED_CLUE);
 
     // change cell type back to answer
     kbv.setCellType(1,1,CellType::CellAnswer);
+    QCOMPARE(pKbm->getClueDown(1,0), EMPTY_CLUE);
+    QCOMPARE(pKbm->getClueRight(0,1), EMPTY_CLUE);
     QCOMPARE(pKbm->getCellType(1,1), CellType::CellAnswer);
-    QCOMPARE(pKbm->getAnswer(1,1), NO_ANSWER);
+    QCOMPARE(pKbm->getAnswer(1,1), EMPTY_ANSWER);
 
     // set answer
     kbv.setAnswer(1,1,8);

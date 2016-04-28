@@ -10,14 +10,14 @@ BoardData::BoardData(int cols, int rows)
     for(int c = 0; c < m_cols; ++c) {
         const int i = c2i(c, 0);
         m_data[i].ctype = CellType::CellClue;
-        m_data[i].clueRight = m_data[i].clueDown = NO_CLUE;
+        m_data[i].clueRight = m_data[i].clueDown = EMPTY_CLUE;
     }
 
     // leftmost column
     for(int r = 1; r < m_rows; ++r) {
         const int i = c2i(0, r);
         m_data[i].ctype = CellType::CellClue;
-        m_data[i].clueRight = m_data[i].clueDown = NO_CLUE;
+        m_data[i].clueRight = m_data[i].clueDown = EMPTY_CLUE;
     }
 
     // everything else
@@ -25,7 +25,7 @@ BoardData::BoardData(int cols, int rows)
         for(int r = 1; r < m_rows; ++r) {
             const int i = c2i(c, r);
             m_data[i].ctype = CellType::CellAnswer;
-            m_data[i].answer = NO_ANSWER;
+            m_data[i].answer = EMPTY_ANSWER;
         }
     }
 }
@@ -59,10 +59,10 @@ void BoardData::setCellType(int col, int row, CellType ct)
         m_data[i].ctype = ct;
         switch(ct) {
         case CellType::CellAnswer:
-            m_data[i].answer = NO_ANSWER;
+            m_data[i].answer = EMPTY_ANSWER;
             break;
         default:
-            m_data[i].clueRight = m_data[i].clueDown = NO_CLUE;
+            m_data[i].clueRight = m_data[i].clueDown = EMPTY_CLUE;
             break;
         }
     }
@@ -147,9 +147,28 @@ void KkrBoardManager::setCellType(int col, int row, CellType ct)
     if(m_data[i].ctype != ct) {
         m_data[i].ctype = ct;
         if(ct == CellType::CellAnswer)
-            m_data[i].answer = NO_ANSWER;
+            m_data[i].answer = EMPTY_ANSWER;
         else {
-            m_data[i].clueRight = m_data[i].clueDown = NO_CLUE;
+            if(col == m_cols-1 || m_data[c2i(col+1, row)].ctype == CellType::CellClue)
+                m_data[i].clueRight = CLOSED_CLUE;
+            else
+                m_data[i].clueRight = EMPTY_CLUE;
+            if(row == m_rows-1 || m_data[c2i(col, row+1)].ctype == CellType::CellClue)
+                m_data[i].clueDown = CLOSED_CLUE;
+            else
+                m_data[i].clueDown = EMPTY_CLUE;
+        }
+        if(col > 0) {
+            const int il = c2i(col-1,row);
+            if(m_data[il].ctype == CellType::CellClue) {
+                m_data[il].clueRight = (ct == CellType::CellAnswer ? EMPTY_CLUE : CLOSED_CLUE);
+            }
+        }
+        if(row > 0) {
+            const int iu = c2i(col,row-1);
+            if(m_data[iu].ctype == CellType::CellClue) {
+                m_data[iu].clueDown = (ct == CellType::CellAnswer ? EMPTY_CLUE : CLOSED_CLUE);
+            }
         }
     }
 }
@@ -247,14 +266,14 @@ bool KkrBoardManager::isValid() const
                     return false;
             } else {
                 const int cr = m_data[i].clueRight;
-                if(cr == NO_CLUE) {
+                if(cr == EMPTY_CLUE) {
                     if(c != m_cols-1 && m_data[c2i(c+1,r)].ctype != CellType::CellClue)
                         return false;
                 } else if(cr < 1 || cr > 45)
                     return false;
 
                 const int cd = m_data[i].clueDown;
-                if(cd == NO_CLUE) {
+                if(cd == EMPTY_CLUE) {
                     if(r != m_rows-1 && m_data[c2i(c,r+1)].ctype != CellType::CellClue)
                         return false;
                 } else if(cd < 1 || cd > 45)
@@ -318,18 +337,24 @@ void KkrBoardManager::slCreate(int cols, int rows)
     m_cols = cols; m_rows = rows;
     m_data.resize(m_cols*m_rows);
 
+    // top-left cell
+    m_data[0].ctype = CellType::CellClue;
+    m_data[0].clueRight = m_data[0].clueDown = CLOSED_CLUE;
+
     // topmost row
-    for(int c = 0; c < m_cols; ++c) {
+    for(int c = 1; c < m_cols; ++c) {
         const int i = c2i(c, 0);
         m_data[i].ctype = CellType::CellClue;
-        m_data[i].clueRight = m_data[i].clueDown = NO_CLUE;
+        m_data[i].clueRight = CLOSED_CLUE;
+        m_data[i].clueDown = EMPTY_CLUE;
     }
 
     // leftmost column
     for(int r = 1; r < m_rows; ++r) {
         const int i = c2i(0, r);
         m_data[i].ctype = CellType::CellClue;
-        m_data[i].clueRight = m_data[i].clueDown = NO_CLUE;
+        m_data[i].clueRight = EMPTY_CLUE;
+        m_data[i].clueDown = CLOSED_CLUE;
     }
 
     // everything else
@@ -337,7 +362,7 @@ void KkrBoardManager::slCreate(int cols, int rows)
         for(int r = 1; r < m_rows; ++r) {
             const int i = c2i(c, r);
             m_data[i].ctype = CellType::CellAnswer;
-            m_data[i].answer = NO_ANSWER;
+            m_data[i].answer = EMPTY_ANSWER;
         }
     }
 
