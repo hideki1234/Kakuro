@@ -1,5 +1,6 @@
 #include "kkrworkboard.h"
 #include <QPainter>
+#include <array>
 
 // dimensions
 static const int MARGIN = 10;
