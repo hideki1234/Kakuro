@@ -318,6 +318,70 @@ void KkrBoardView::switchCellType(int col, int row)
     update();
 }
 
+void KkrBoardView::keyValue(QKeyEvent *e)
+{
+    const auto ct = m_pBoardData->getCellType(m_curCol, m_curRow);
+    if(ct == CellType::CellClue && m_curClue == CursorClue::None)
+        return;
+
+    int newValue;
+    switch(e->key()) {
+    case Qt::Key_Delete:
+        newValue = 0;
+        if(ct == CellType::CellClue) {
+            if(m_curClue == CursorClue::Right)
+                m_pBoardData->setClueRight(m_curCol, m_curRow, newValue);
+            else
+                m_pBoardData->setClueDown(m_curCol, m_curRow, newValue);
+        } else {
+            m_pBoardData->setAnswer(m_curCol, m_curRow, newValue);
+        }
+        break;
+
+    case Qt::Key_0: case Qt::Key_1:
+    case Qt::Key_2: case Qt::Key_3:
+    case Qt::Key_4: case Qt::Key_5:
+    case Qt::Key_6: case Qt::Key_7:
+    case Qt::Key_8: case Qt::Key_9:
+    {
+        int kValue;
+        switch(e->key()) {
+        case Qt::Key_0: kValue = 0; break;
+        case Qt::Key_1: kValue = 1; break;
+        case Qt::Key_2: kValue = 2; break;
+        case Qt::Key_3: kValue = 3; break;
+        case Qt::Key_4: kValue = 4; break;
+        case Qt::Key_5: kValue = 5; break;
+        case Qt::Key_6: kValue = 6; break;
+        case Qt::Key_7: kValue = 7; break;
+        case Qt::Key_8: kValue = 8; break;
+        case Qt::Key_9: kValue = 9; break;
+        }
+
+        if(ct == CellType::CellClue) {
+            if(m_curClue == CursorClue::Right)
+                newValue = m_pBoardData->getClueRight(m_curCol, m_curRow);
+            else
+                newValue = m_pBoardData->getClueDown(m_curCol, m_curRow);
+            newValue *= 10;
+            newValue += kValue;
+            if(newValue > 45)
+                newValue %= 10;
+
+            if(m_curClue == CursorClue::Right)
+                m_pBoardData->setClueRight(m_curCol, m_curRow, newValue);
+            else
+                m_pBoardData->setClueDown(m_curCol, m_curRow, newValue);
+        } else {
+            m_pBoardData->setAnswer(m_curCol, m_curRow, kValue);
+        }
+    }
+        break;
+    }
+
+    update();
+}
+
 /*
  * widget events
  */
@@ -367,6 +431,15 @@ void KkrBoardView::keyReleaseEvent(QKeyEvent *e)
     case Qt::Key_S:
         if(e->modifiers() == Qt::NoModifier)
             switchCellType(m_curCol, m_curRow);
+        break;
+
+    case Qt::Key_0: case Qt::Key_1:
+    case Qt::Key_2: case Qt::Key_3:
+    case Qt::Key_4: case Qt::Key_5:
+    case Qt::Key_6: case Qt::Key_7:
+    case Qt::Key_8: case Qt::Key_9:
+    case Qt::Key_Delete:
+        keyValue(e);
         break;
 
     default:
