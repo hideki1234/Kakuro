@@ -304,6 +304,12 @@ void KkrBoardView::switchCellType(int col, int row)
         m_pBoardData->setClueDown(col, row, EMPTY_CLUE);
         m_pBoardData->setClueRight(col, row, EMPTY_CLUE);
         resetClueCell(col, row);
+        if(m_pBoardData->getClueDown(col, row) != CLOSED_CLUE)
+            m_curClue = CursorClue::Down;
+        else if(m_pBoardData->getClueRight(col, row) != CLOSED_CLUE)
+            m_curClue = CursorClue::Right;
+        else
+            m_curClue = CursorClue::None;
     }
 
     resetClueCell(col-1, row);
