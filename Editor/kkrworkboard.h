@@ -25,7 +25,9 @@ class KkrBoardView : public QWidget
     // input cursor
     int m_curCol;
     int m_curRow;
-    bool m_curDown;
+    enum class CursorClue {
+        None, Down, Right,
+    } m_curClue;
 
     // data
     KkrBoardManager *m_pBoardData;
@@ -45,6 +47,13 @@ class KkrBoardView : public QWidget
      * drawing
      */
     void drawCell(QPainter &p, int col, int row) const;
+    void showCell(int col, int row);
+    void resetCursor(int col, int row, CursorClue cl = CursorClue::None);
+
+    /*
+     * key input
+     */
+    void keyCursor(QKeyEvent *e);
 
 public:
     explicit KkrBoardView(KkrBoardManager *m_pBoardData, QWidget *parent = 0);
@@ -58,6 +67,7 @@ public:
 
 protected:
     void paintEvent(QPaintEvent *e) override;
+    void keyReleaseEvent(QKeyEvent *e) override;
 
 signals:
 

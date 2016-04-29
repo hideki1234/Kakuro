@@ -4,6 +4,7 @@
 #include <QMenuBar>
 #include <QDockWidget>
 #include <QMessageBox>
+#include <QEvent>
 #include "dialognew.h"
 
 void KkrEditMain::setupMainMenu()
@@ -31,7 +32,9 @@ void KkrEditMain::makeCoreWidgets()
     m_pScrollBoard->setPalette(palBack);
     m_pScrollBoard->setAutoFillBackground(true);
     m_pWorkBoard = new KkrBoardView(&m_BoardData);
+    m_pWorkBoard->setScrollArea(m_pScrollBoard);
     m_pScrollBoard->setWidget(m_pWorkBoard);
+    m_pScrollBoard->installEventFilter(this);
 
     m_pMetaView = new MetaDataView(&m_MetaData, this);
  }
@@ -93,10 +96,31 @@ void KkrEditMain::newWorkBoard()
     // UI size excludes topmost clue-only row and leftmost clue-only column
     // Internal data includes them
     emit sigNewBoard(dlgNew.getNumCols()+1, dlgNew.getNumRows()+1);
+
+    m_pWorkBoard->setFocus();
 }
 
 void KkrEditMain::saveWorkBoard()
 {
     // TODO
     QMessageBox::information(this, tr("kakuro Editor"), "Not implemented yet");
+}
+
+/*
+ * event filter
+ */
+bool KkrEditMain::eventFilter(QObject *pWatched, QEvent *e)
+{
+    if(pWatched == m_pScrollBoard) {
+        switch(e->type()) {
+        case QEvent::FocusIn:
+            m_pWorkBoard->setFocus();
+        case QEvent::KeyPress:
+        case QEvent::KeyRelease:
+            return true;
+        default:
+            break;
+        }
+    }
+    return false;
 }

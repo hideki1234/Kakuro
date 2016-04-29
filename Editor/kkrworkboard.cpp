@@ -1,5 +1,6 @@
 #include "kkrworkboard.h"
 #include <QPainter>
+#include <QKeyEvent>
 #include <array>
 
 // dimensions
@@ -76,8 +77,15 @@ void KkrBoardView::drawCell(QPainter &p, int col, int row) const
         break;
     case CellType::CellClue:
     {
-        QBrush brFG{ m_curCol==col && m_curRow==row ? Qt::cyan : Qt::black };
-        p.setBrush(brFG);
+        const bool onCursor = m_curCol==col && m_curRow==row;
+        QBrush brWhite(Qt::white);
+        QBrush brBlack(Qt::black);
+        QBrush brCyan(Qt::cyan);
+
+        if(onCursor && m_curClue==CursorClue::None)
+            p.setBrush(brCyan);
+        else
+            p.setBrush(brBlack);
         std::array<QPoint, 3> points;
 
         // upper right triangle
@@ -92,10 +100,12 @@ void KkrBoardView::drawCell(QPainter &p, int col, int row) const
         points[2] = cellRect.bottomRight(); points[2] += QPoint(-2,-1);
         p.drawPolygon(points.data(), static_cast<int>(points.size()));
 
-        QBrush brWhite(Qt::white);
         if(m_pBoardData->getClueRight(col, row) != CLOSED_CLUE) {
             const QRect clueRect{getClueRectRight(cellRect)};
-            p.fillRect(clueRect, brWhite);
+            if(onCursor && m_curClue==CursorClue::Right)
+                p.fillRect(clueRect, brCyan);
+            else
+                p.fillRect(clueRect, brWhite);
             p.setFont(m_fontClue);
             p.drawText(clueRect, Qt::AlignCenter | Qt::AlignHCenter,
                         digits[m_pBoardData->getClueRight(col, row)]);
@@ -103,7 +113,10 @@ void KkrBoardView::drawCell(QPainter &p, int col, int row) const
 
         if(m_pBoardData->getClueDown(col, row) != CLOSED_CLUE) {
             const QRect clueRect{getClueRectDown(cellRect)};
-            p.fillRect(clueRect, brWhite);
+            if(onCursor && m_curClue==CursorClue::Down)
+                p.fillRect(clueRect, brCyan);
+            else
+                p.fillRect(clueRect, brWhite);
             p.setFont(m_fontClue);
             p.drawText(clueRect, Qt::AlignCenter | Qt::AlignHCenter,
                        digits[m_pBoardData->getClueDown(col, row)]);
@@ -115,6 +128,102 @@ void KkrBoardView::drawCell(QPainter &p, int col, int row) const
     }
 }
 
+void KkrBoardView::showCell(int col, int row)
+{
+    if(m_pScrollArea != nullptr) {
+        const QRect cellRect = getCellRect(col, row);
+        // the top/right clue cell must be also in the visible area
+        m_pScrollArea->ensureVisible(cellRect.x(), cellRect.y(),
+                                     FRAME_THICK+CELL_WIDTH, FRAME_THICK+CELL_WIDTH);
+    }
+}
+
+void KkrBoardView::resetCursor(int col, int row, CursorClue cl)
+{
+    Q_ASSERT(col >= 0 && col < m_pBoardData->getNumCols());
+    Q_ASSERT(row >= 0 && row < m_pBoardData->getNumRows());
+
+    // make sure the cursor comes in the visible area
+    showCell(col, row);
+
+    m_curCol = col; m_curRow = row;
+    m_curClue = cl;
+    update(); // can be optimized
+}
+
+/*
+ * key input
+ */
+void KkrBoardView::keyCursor(QKeyEvent *e)
+{
+    int newCol;
+    int newRow;
+    const auto mod = e->modifiers();
+    CursorClue cl = CursorClue::None;
+
+    if(mod == Qt::NoModifier) {
+        switch(e->key()) {
+        case Qt::Key_Up:    case Qt::Key_K:
+            if(m_curRow < 1)
+                return;
+            newCol = m_curCol;
+            newRow = m_curRow-1;
+
+            if(m_pBoardData->getCellType(newCol, newRow) == CellType::CellClue) {
+                if(m_pBoardData->getClueDown(newCol, newRow) != CLOSED_CLUE)
+                    cl = CursorClue::Down;
+                else if(m_pBoardData->getClueRight(newCol, newRow) != CLOSED_CLUE)
+                    cl = CursorClue::Right;
+            }
+            break;
+        case Qt::Key_Down:  case Qt::Key_J:
+            if(m_curRow >= m_pBoardData->getNumRows()-1)
+                return;
+            newCol = m_curCol;
+            newRow = m_curRow+1;
+
+            if(m_pBoardData->getCellType(newCol, newRow) == CellType::CellClue) {
+                if(m_pBoardData->getClueRight(newCol, newRow) != CLOSED_CLUE)
+                    cl = CursorClue::Right;
+                else if(m_pBoardData->getClueDown(newCol, newRow) != CLOSED_CLUE)
+                    cl = CursorClue::Down;
+            }
+            break;
+        case Qt::Key_Left:  case Qt::Key_H:
+            if(m_curCol < 1)
+                return;
+            newCol = m_curCol-1;
+            newRow = m_curRow;
+
+            if(m_pBoardData->getCellType(newCol, newRow) == CellType::CellClue) {
+                if(m_pBoardData->getClueRight(newCol, newRow) != CLOSED_CLUE)
+                    cl = CursorClue::Right;
+                else if(m_pBoardData->getClueDown(newCol, newRow) != CLOSED_CLUE)
+                    cl = CursorClue::Down;
+            }
+            break;
+        case Qt::Key_Right: case Qt::Key_L:
+            if(m_curCol >= m_pBoardData->getNumCols()-1)
+                return;
+            newCol = m_curCol+1;
+            newRow = m_curRow;
+
+            if(m_pBoardData->getCellType(newCol, newRow) == CellType::CellClue) {
+                if(m_pBoardData->getClueDown(newCol, newRow) != CLOSED_CLUE)
+                    cl = CursorClue::Down;
+                else if(m_pBoardData->getClueRight(newCol, newRow) != CLOSED_CLUE)
+                    cl = CursorClue::Right;
+            }
+            break;
+        }
+    }
+
+    resetCursor(newCol, newRow, cl);
+}
+
+/*
+ * widget events
+ */
 void KkrBoardView::paintEvent(QPaintEvent * /*e*/)
 {
     QPainter p{this};
@@ -148,6 +257,22 @@ void KkrBoardView::paintEvent(QPaintEvent * /*e*/)
     }
 }
 
+void KkrBoardView::keyReleaseEvent(QKeyEvent *e)
+{
+    switch(e->key()) {
+    case Qt::Key_Up:    case Qt::Key_K:
+    case Qt::Key_Down:  case Qt::Key_J:
+    case Qt::Key_Left:  case Qt::Key_H:
+    case Qt::Key_Right: case Qt::Key_L:
+        keyCursor(e);
+        break;
+
+    default:
+        // just ignore other keys
+        break;
+    }
+}
+
 /*
  * slots
  */
@@ -163,7 +288,7 @@ void KkrBoardView::slReset()
 
     // initial cursor position
     m_curCol = m_curRow = 0;
-    m_curDown = true;
+    m_curClue = CursorClue::None;
 
     setFixedSize(m_board_width, m_board_height);
 

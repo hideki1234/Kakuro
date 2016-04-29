@@ -48,6 +48,11 @@ public:
     void newWorkBoard();
     void saveWorkBoard();
 
+    /*
+     * event filter
+     */
+    bool eventFilter(QObject *pWatched, QEvent *e) override;
+
 signals:
     void sigNewMeta();
     void sigNewBoard(int cols, int rows);
