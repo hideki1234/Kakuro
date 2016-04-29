@@ -164,6 +164,18 @@ void KkrBoardView::keyCursor(QKeyEvent *e)
     if(mod == Qt::NoModifier) {
         switch(e->key()) {
         case Qt::Key_Up:    case Qt::Key_K:
+            // cusor move within cell
+            if(m_pBoardData->getCellType(m_curCol, m_curRow) == CellType::CellClue) {
+                if(m_curClue == CursorClue::Down
+                        && m_pBoardData->getClueRight(m_curCol, m_curRow) != CLOSED_CLUE) {
+                    cl = CursorClue::Right;
+                    newCol = m_curCol;
+                    newRow = m_curRow;
+                    break;
+                }
+            }
+
+            // move to next cell
             if(m_curRow < 1)
                 return;
             newCol = m_curCol;
@@ -176,7 +188,20 @@ void KkrBoardView::keyCursor(QKeyEvent *e)
                     cl = CursorClue::Right;
             }
             break;
+
         case Qt::Key_Down:  case Qt::Key_J:
+            // cusor move within cell
+            if(m_pBoardData->getCellType(m_curCol, m_curRow) == CellType::CellClue) {
+                if(m_curClue == CursorClue::Right
+                        && m_pBoardData->getClueDown(m_curCol, m_curRow) != CLOSED_CLUE) {
+                    cl = CursorClue::Down;
+                    newCol = m_curCol;
+                    newRow = m_curRow;
+                    break;
+                }
+            }
+
+            // move to next cell
             if(m_curRow >= m_pBoardData->getNumRows()-1)
                 return;
             newCol = m_curCol;
@@ -189,7 +214,20 @@ void KkrBoardView::keyCursor(QKeyEvent *e)
                     cl = CursorClue::Down;
             }
             break;
+
         case Qt::Key_Left:  case Qt::Key_H:
+            // cusor move within cell
+            if(m_pBoardData->getCellType(m_curCol, m_curRow) == CellType::CellClue) {
+                if(m_curClue == CursorClue::Right
+                        && m_pBoardData->getClueDown(m_curCol, m_curRow) != CLOSED_CLUE) {
+                    cl = CursorClue::Down;
+                    newCol = m_curCol;
+                    newRow = m_curRow;
+                    break;
+                }
+            }
+
+            // move to next cell
             if(m_curCol < 1)
                 return;
             newCol = m_curCol-1;
@@ -202,7 +240,20 @@ void KkrBoardView::keyCursor(QKeyEvent *e)
                     cl = CursorClue::Down;
             }
             break;
+
         case Qt::Key_Right: case Qt::Key_L:
+            // cusor move within cell
+            if(m_pBoardData->getCellType(m_curCol, m_curRow) == CellType::CellClue) {
+                if(m_curClue == CursorClue::Down
+                        && m_pBoardData->getClueRight(m_curCol, m_curRow) != CLOSED_CLUE) {
+                    cl = CursorClue::Right;
+                    newCol = m_curCol;
+                    newRow = m_curRow;
+                    break;
+                }
+            }
+
+            // move to next cell
             if(m_curCol >= m_pBoardData->getNumCols()-1)
                 return;
             newCol = m_curCol+1;
@@ -219,6 +270,46 @@ void KkrBoardView::keyCursor(QKeyEvent *e)
     }
 
     resetCursor(newCol, newRow, cl);
+}
+
+void KkrBoardView::resetClueCell(int col, int row)
+{
+    if(col < 0 || row < 0)
+        return;
+    if(m_pBoardData->getCellType(col, row) != CellType::CellClue)
+        return;
+    if(col == m_pBoardData->getNumCols()-1
+            || m_pBoardData->getCellType(col+1, row) == CellType::CellClue)
+        m_pBoardData->setClueRight(col, row, CLOSED_CLUE);
+    if(row == m_pBoardData->getNumRows()-1
+            || m_pBoardData->getCellType(col, row+1) == CellType::CellClue)
+        m_pBoardData->setClueDown(col, row, CLOSED_CLUE);
+
+}
+
+void KkrBoardView::switchCellType(int col, int row)
+{
+    Q_ASSERT(0 <= col && col < m_pBoardData->getNumCols());
+    Q_ASSERT(0 <= row && row < m_pBoardData->getNumRows());
+
+    // topmost row and leftmost column are always clue
+    if(col == 0 || row == 0)
+        return;
+
+    if(m_pBoardData->getCellType(col, row) == CellType::CellClue) {
+        m_pBoardData->setCellType(col, row, CellType::CellAnswer);
+        m_pBoardData->setAnswer(col, row, EMPTY_ANSWER);
+    } else {
+        m_pBoardData->setCellType(col, row, CellType::CellClue);
+        m_pBoardData->setClueDown(col, row, EMPTY_CLUE);
+        m_pBoardData->setClueRight(col, row, EMPTY_CLUE);
+        resetClueCell(col, row);
+    }
+
+    resetClueCell(col-1, row);
+    resetClueCell(col, row-1);
+
+    update();
 }
 
 /*
@@ -265,6 +356,11 @@ void KkrBoardView::keyReleaseEvent(QKeyEvent *e)
     case Qt::Key_Left:  case Qt::Key_H:
     case Qt::Key_Right: case Qt::Key_L:
         keyCursor(e);
+        break;
+
+    case Qt::Key_S:
+        if(e->modifiers() == Qt::NoModifier)
+            switchCellType(m_curCol, m_curRow);
         break;
 
     default:

@@ -54,6 +54,8 @@ class KkrBoardView : public QWidget
      * key input
      */
     void keyCursor(QKeyEvent *e);
+    void resetClueCell(int col, int row);
+    void switchCellType(int col, int row);
 
 public:
     explicit KkrBoardView(KkrBoardManager *m_pBoardData, QWidget *parent = 0);
