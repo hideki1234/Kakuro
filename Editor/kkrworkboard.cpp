@@ -365,6 +365,8 @@ void KkrBoardView::keyValue(QKeyEvent *e)
                 newValue = m_pBoardData->getClueDown(m_curCol, m_curRow);
             newValue *= 10;
             newValue += kValue;
+            if(newValue > 99)
+                newValue %= 100;
             if(newValue > 45)
                 newValue %= 10;
 
