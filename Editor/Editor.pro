@@ -25,4 +25,6 @@ HEADERS  += kkreditmain.h \
     metadatamanager.h \
     metadataview.h \
     kkrboardmanager.h \
-    dialognew.h
+    dialognew.h \
+    metadata.h \
+    boarddata.h
